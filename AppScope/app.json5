@@ -1,0 +1,10 @@
+{
+  "app": {
+    "bundleName": "com.local.xm6harmony",
+    "vendor": "Community",
+    "versionCode": 1000007,
+    "versionName": "0.5.0",
+    "icon": "$media:app_icon",
+    "label": "$string:app_name"
+  }
+}

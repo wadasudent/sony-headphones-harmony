@@ -1,0 +1,70 @@
+{
+  "module": {
+    "name": "entry",
+    "type": "entry",
+    "description": "$string:module_desc",
+    "mainElement": "EntryAbility",
+    "deviceTypes": [
+      "phone",
+      "tablet"
+    ],
+    "deliveryWithInstall": true,
+    "installationFree": false,
+    "pages": "$profile:main_pages",
+    "abilities": [
+      {
+        "name": "EntryAbility",
+        "srcEntry": "./ets/entryability/EntryAbility.ets",
+        "description": "$string:module_desc",
+        "icon": "$media:app_icon",
+        "label": "$string:app_name",
+        "startWindowIcon": "$media:start_icon",
+        "startWindowBackground": "$color:start_window_background",
+        "exported": true,
+        "skills": [
+          {
+            "entities": [
+              "entity.system.home"
+            ],
+            "actions": [
+              "ohos.want.action.home"
+            ]
+          }
+        ],
+        "backgroundModes": [
+          "bluetoothInteraction"
+        ],
+        "launchType": "singleton"
+      }
+    ],
+    "requestPermissions": [
+      {
+        "name": "ohos.permission.ACCESS_BLUETOOTH",
+        "reason": "$string:bluetooth_permission_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.KEEP_BACKGROUND_RUNNING"
+      }
+    ],
+    "extensionAbilities": [
+      {
+        "name": "HeadphoneForm",
+        "srcEntry": "./ets/widget/HeadphoneForm.ets",
+        "type": "form",
+        "exported": true,
+        "metadata": [
+          {
+            "name": "ohos.extension.form",
+            "resource": "$profile:headphone_cards"
+          }
+        ]
+      }
+    ]
+  }
+}

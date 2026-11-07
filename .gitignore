@@ -1,0 +1,42 @@
+# Local configuration; use the tracked example on a fresh checkout.
+/build-profile.json5
+/local.properties
+.env
+.env.*
+!.env.example
+
+# IDE, dependencies and generated build data.
+.hvigor/
+.idea/
+oh_modules/
+node_modules/
+**/build/
+*.log
+
+# Signing material must stay local.
+*.p12
+*.p7b
+*.cer
+*.jks
+*.keystore
+*.key
+*.pem
+*.csr
+
+# Packages and scratch files do not belong in source history.
+*.hap
+*.app
+*.zip
+*.pcap
+*.pcapng
+/outputs/
+/work/
+/test-output/
+Thumbs.db
+.DS_Store
+
+# Local reference notes and device captures.
+/codex-folder-contents.md
+/codex-folder-report.md
+/sony_headphones_050.jpeg
+/索尼SoundConnect鸿蒙适配_邮件.txt

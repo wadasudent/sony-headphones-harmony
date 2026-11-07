@@ -1,0 +1,344 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "索尼耳机原生控制助手"
+    },
+    {
+      "name": "bluetooth_permission_reason",
+      "value": "用于连接您已配对的耳机，读取电量并调整降噪等设置"
+    },
+    {
+      "name": "home_title",
+      "value": "我的耳机"
+    },
+    {
+      "name": "home_subtitle",
+      "value": "让声音，恰如所需"
+    },
+    {
+      "name": "more_title",
+      "value": "更多"
+    },
+    {
+      "name": "more_subtitle",
+      "value": "设备信息与连接设置"
+    },
+    {
+      "name": "tab_headphones",
+      "value": "耳机"
+    },
+    {
+      "name": "connected",
+      "value": "已连接"
+    },
+    {
+      "name": "connecting",
+      "value": "连接中"
+    },
+    {
+      "name": "disconnected",
+      "value": "未连接"
+    },
+    {
+      "name": "headphone_category",
+      "value": "无线降噪耳机"
+    },
+    {
+      "name": "headphone_illustration",
+      "value": "头戴式耳机插画"
+    },
+    {
+      "name": "battery",
+      "value": "剩余电量"
+    },
+    {
+      "name": "codec",
+      "value": "音频编码"
+    },
+    {
+      "name": "charging",
+      "value": "正在充电"
+    },
+    {
+      "name": "syncing",
+      "value": "正在同步…"
+    },
+    {
+      "name": "refresh_status",
+      "value": "刷新耳机状态"
+    },
+    {
+      "name": "cancel_connection",
+      "value": "取消连接"
+    },
+    {
+      "name": "connect_headphones",
+      "value": "连接耳机"
+    },
+    {
+      "name": "pair_first",
+      "value": "请先在系统蓝牙设置中完成配对"
+    },
+    {
+      "name": "dismiss_message",
+      "value": "收起提示"
+    },
+    {
+      "name": "ready_title",
+      "value": "连接后，为你开启"
+    },
+    {
+      "name": "listening_mode",
+      "value": "聆听模式"
+    },
+    {
+      "name": "listening_preview",
+      "value": "降噪、环境声，随心切换"
+    },
+    {
+      "name": "connection_preference",
+      "value": "连接偏好"
+    },
+    {
+      "name": "quality_preview",
+      "value": "选择音质优先或稳定连接"
+    },
+    {
+      "name": "offline_hint",
+      "value": "连接耳机后显示实时电量与音频编码"
+    },
+    {
+      "name": "noise_cancel",
+      "value": "降噪"
+    },
+    {
+      "name": "ambient",
+      "value": "环境声"
+    },
+    {
+      "name": "off",
+      "value": "关闭"
+    },
+    {
+      "name": "noise_unavailable",
+      "value": "暂未获取到耳机支持的聆听模式"
+    },
+    {
+      "name": "ambient_level",
+      "value": "环境声强度"
+    },
+    {
+      "name": "focus_voice",
+      "value": "突出人声"
+    },
+    {
+      "name": "focus_voice_hint",
+      "value": "让周围的交谈更清晰"
+    },
+    {
+      "name": "quality_first",
+      "value": "音质优先"
+    },
+    {
+      "name": "quality_first_hint",
+      "value": "适合安静、连接稳定的环境"
+    },
+    {
+      "name": "stable_first",
+      "value": "连接稳定优先"
+    },
+    {
+      "name": "stable_first_hint",
+      "value": "适合通勤或无线干扰较多的环境"
+    },
+    {
+      "name": "priority_unavailable",
+      "value": "当前耳机暂不支持在本应用中切换连接偏好。你仍可查看音频编码。"
+    },
+    {
+      "name": "codec_hint",
+      "value": "实际音频编码由手机与耳机协商，编码名称不代表码率。"
+    },
+    {
+      "name": "device_information",
+      "value": "设备信息"
+    },
+    {
+      "name": "model",
+      "value": "耳机型号"
+    },
+    {
+      "name": "firmware",
+      "value": "固件版本"
+    },
+    {
+      "name": "disconnect_control",
+      "value": "断开控制连接"
+    },
+    {
+      "name": "connection_notes",
+      "value": "关于连接"
+    },
+    {
+      "name": "connection_notes_body",
+      "value": "先在系统蓝牙中配对索尼耳机，再返回本应用连接。\n\n当前使用 MDR V2 控制协议，各功能以耳机返回的能力为准；部分旧型号使用的 MDR V1 尚待适配。已完成实机验证的型号为 WH-1000XM6。\n\n系统支持时可在桌面持续同步，否则离开应用会断开控制连接。长按桌面应用图标可添加耳机卡片。"
+    },
+    {
+      "name": "privacy_title",
+      "value": "你的数据，留在本机"
+    },
+    {
+      "name": "privacy_body",
+      "value": "申请蓝牙权限以连接耳机。上次连接的设备标识和卡片读数仅保存在本机，用于重连与桌面展示；连接日志仅保存在内存中，不包含设备地址。不读取或上传音乐内容。"
+    },
+    {
+      "name": "connection_logs",
+      "value": "连接记录"
+    },
+    {
+      "name": "no_logs",
+      "value": "暂无记录。连接过程中的提示会出现在这里。"
+    },
+    {
+      "name": "community_notice",
+      "value": "社区开发的耳机控制工具\n与索尼、华为无官方关联"
+    },
+    {
+      "name": "select_device",
+      "value": "选择耳机"
+    },
+    {
+      "name": "refresh_devices",
+      "value": "刷新"
+    },
+    {
+      "name": "device_sheet_hint",
+      "value": "按常见索尼耳机名称筛选已配对设备。连接后按实际能力显示功能；部分旧型号协议尚待适配。"
+    },
+    {
+      "name": "reading_devices",
+      "value": "正在读取已配对设备…"
+    },
+    {
+      "name": "no_devices",
+      "value": "未找到已配对的索尼耳机"
+    },
+    {
+      "name": "no_devices_hint",
+      "value": "请先在系统蓝牙设置中配对索尼耳机，再返回刷新。首次连接前若已自定义名称，可能无法识别；请先恢复默认设备名。已成功连接的耳机可继续使用自定义名称。"
+    },
+    {
+      "name": "paired_device",
+      "value": "已配对 · 点击连接"
+    },
+    {
+      "name": "automatic_ambient",
+      "value": "自动环境声"
+    },
+    {
+      "name": "automatic_ambient_hint",
+      "value": "由耳机自动调整环境声"
+    },
+    {
+      "name": "ambient_sensitivity",
+      "value": "环境声检测灵敏度"
+    },
+    {
+      "name": "sensitivity_low",
+      "value": "较低"
+    },
+    {
+      "name": "sensitivity_standard",
+      "value": "标准"
+    },
+    {
+      "name": "sensitivity_high",
+      "value": "较高"
+    },
+    {
+      "name": "switch_on",
+      "value": "已开启"
+    },
+    {
+      "name": "switch_off",
+      "value": "已关闭"
+    },
+    {
+      "name": "device_controls",
+      "value": "耳机操作"
+    },
+    {
+      "name": "touch_panel",
+      "value": "触摸面板"
+    },
+    {
+      "name": "touch_panel_hint",
+      "value": "控制耳罩的触摸手势"
+    },
+    {
+      "name": "power_off_title",
+      "value": "关闭耳机？"
+    },
+    {
+      "name": "power_off_message",
+      "value": "耳机会停止播放并断开蓝牙连接。重新使用时，需要手动将耳机开机。"
+    },
+    {
+      "name": "power_off_action",
+      "value": "关闭耳机"
+    },
+    {
+      "name": "powering_off",
+      "value": "正在发送关机指令…"
+    },
+    {
+      "name": "cancel",
+      "value": "取消"
+    },
+    {
+      "name": "spatial_effect",
+      "value": "空间音效"
+    },
+    {
+      "name": "cinema_title",
+      "value": "360 Upmix for Cinema"
+    },
+    {
+      "name": "cinema_description",
+      "value": "让蓝牙播放的立体声获得空间感。通话及耳机线连接时不生效。"
+    },
+    {
+      "name": "cinema_exclusive_hint",
+      "value": "开启时会关闭背景音乐、人声增强等其他互斥聆听音效。"
+    },
+    {
+      "name": "cinema_persistence",
+      "value": "此开关由耳机保存，关机后仍会保留。"
+    },
+    {
+      "name": "widget_name",
+      "value": "索尼耳机"
+    },
+    {
+      "name": "widget_description",
+      "value": "查看上次读取的电量与聆听模式，点击连接耳机或切换模式"
+    },
+    {
+      "name": "widget_guide_title",
+      "value": "耳机，随手可见"
+    },
+    {
+      "name": "widget_guide_body",
+      "value": "长按桌面应用图标，选择服务卡片。支持小卡片查看电量，横卡片快捷切换聆听模式。"
+    },
+    {
+      "name": "background_on",
+      "value": "后台同步已开启"
+    },
+    {
+      "name": "background_off",
+      "value": "仅在应用内同步"
+    }
+  ]
+}

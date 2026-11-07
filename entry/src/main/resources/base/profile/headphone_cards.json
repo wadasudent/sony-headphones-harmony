@@ -1,0 +1,15 @@
+{
+  "forms": [{
+    "name": "headphone_status",
+    "displayName": "$string:widget_name",
+    "description": "$string:widget_description",
+    "src": "./ets/widget/pages/HeadphoneCard.ets",
+    "uiSyntax": "arkts",
+    "window": { "designWidth": 360, "autoDesignWidth": true },
+    "colorMode": "auto",
+    "isDefault": true,
+    "updateEnabled": false,
+    "supportDimensions": ["2*2", "2*4"],
+    "defaultDimension": "2*2"
+  }]
+}
