@@ -1,5 +1,5 @@
 import { abilityAccessCtrl, common } from '@kit.AbilityKit';
-import { access, connection, socket } from '@kit.ConnectivityKit';
+import { access, a2dp, connection, socket } from '@kit.ConnectivityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { BackgroundSession } from './BackgroundSession';
 import { isSonyHeadphoneName } from '../protocol/DeviceNames';
@@ -51,6 +51,7 @@ export class HeadphoneState {
   @Trace eqPreset: number = -1;
   @Trace eqPresets: number[] = [];
   @Trace eqBands: number[] = [];
+  @Trace autoReconnect: boolean = false;
 }
 
 class NativeClock implements MdrClock {
@@ -188,27 +189,102 @@ export class HeadphoneController {
   private widgetPublishedAt: number = 0;
   private widgetActionRunning: boolean = false;
   private foreground: boolean = true;
+  private reconnectTimer: number = -1;
+  private reconnectAttempts: number = 0;
+  private reconnectPaused: boolean = false;
+  private reconnectAfter: number = 0;
+  private audioProfile?: a2dp.A2dpSourceProfile;
+  private audioChanged: () => void = () => { this.scheduleReconnect(); };
 
   initialize(context: common.UIAbilityContext): void {
     this.context = context;
+    try { this.state.autoReconnect = widgetPreferences(context).getSync('autoReconnect', false) === true; }
+    catch (_) { this.state.autoReconnect = false; }
     this.background.initialize(context, () => {
       this.state.backgroundActive = false;
       if (!this.foreground) { this.disconnect(); }
-      this.state.notice = '后台同步已停止，卡片保留上次读取值。返回应用可重新连接。';
+      this.state.notice = '后台同步已停止，返回应用可重新连接。';
     });
   }
 
   onForeground(): void {
     this.foreground = true;
     if (this.state.connected) { this.restartPolling(); this.refreshStatus(); }
+    this.watchAudio();
+    this.scheduleReconnect();
   }
 
-  destroy(): void { this.disconnect(); this.background.destroy(); }
+  destroy(): void { this.stopWatchingAudio(); this.disconnect(); this.background.destroy(); }
 
   onBackground(): void {
     this.foreground = false;
-    if (!this.state.backgroundActive || this.state.connecting) { this.disconnect(); }
+    this.cancelReconnect();
+    this.stopWatchingAudio();
+    if (!this.state.backgroundActive || this.state.connecting) { this.disconnect(false); }
     else if (this.state.connected) { this.restartPolling(); }
+  }
+
+  async setAutoReconnect(enabled: boolean): Promise<void> {
+    if (this.context === undefined) { return; }
+    try {
+      const store = widgetPreferences(this.context);
+      store.putSync('autoReconnect', enabled);
+      await store.flush();
+      this.state.autoReconnect = enabled;
+      this.cancelReconnect();
+      this.reconnectAttempts = 0;
+      this.reconnectAfter = 0;
+      this.reconnectPaused = false;
+      if (enabled) { this.watchAudio(); this.scheduleReconnect(); }
+      else { this.stopWatchingAudio(); }
+    } catch (_) { this.showError('无法保存自动重连设置，请重试'); }
+  }
+
+  private watchAudio(): void {
+    if (!this.foreground || !this.state.autoReconnect || this.audioProfile !== undefined) { return; }
+    try {
+      const profile = a2dp.createA2dpSrcProfile();
+      profile.on('connectionStateChange', this.audioChanged);
+      this.audioProfile = profile;
+    } catch (_) { /* No permission prompt or background wakeup for auto reconnect. */ }
+  }
+
+  private stopWatchingAudio(): void {
+    try { this.audioProfile?.off('connectionStateChange', this.audioChanged); } catch (_) {}
+    this.audioProfile = undefined;
+  }
+
+  private cancelReconnect(): void {
+    if (this.reconnectTimer >= 0) { clearTimeout(this.reconnectTimer); this.reconnectTimer = -1; }
+  }
+
+  private scheduleReconnect(): void {
+    if (!this.foreground || !this.state.autoReconnect || this.reconnectPaused || this.state.connected ||
+      this.state.connecting || this.state.busy || this.reconnectTimer >= 0) { return; }
+    if (this.reconnectAttempts >= 3) {
+      if (Date.now() < this.reconnectAfter) { return; }
+      this.reconnectAttempts = 0;
+    }
+    const delays: number[] = [2000, 5000, 15000];
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = -1;
+      this.tryReconnect();
+    }, delays[this.reconnectAttempts]);
+  }
+
+  private async tryReconnect(): Promise<void> {
+    if (!this.foreground || !this.state.autoReconnect || this.reconnectPaused || this.state.connected ||
+      this.state.connecting || this.state.busy || this.context === undefined) { return; }
+    try {
+      if (access.getState() !== access.BluetoothState.STATE_ON) { return; }
+      const address = widgetPreferences(this.context).getSync('device', '') as string;
+      // Only the saved, MDR-verified device already connected for system audio.
+      const connected = a2dp.createA2dpSrcProfile().getConnectedDevices();
+      if (!address || connected.indexOf(address) < 0 || connection.getPairedDevices().indexOf(address) < 0) { return; }
+      ++this.reconnectAttempts;
+      this.reconnectAfter = Date.now() + 60000;
+      await this.connect(new PairedHeadphone(address, '索尼耳机'), true);
+    } catch (_) { /* Permission revoked / unsupported profile: wait for user action. */ }
   }
 
   // Widget routing deliberately enters the foreground so permissions and connection
@@ -309,9 +385,10 @@ export class HeadphoneController {
     finally { this.state.discovering = false; }
   }
 
-  async connect(device: PairedHeadphone): Promise<void> {
+  async connect(device: PairedHeadphone, automatic: boolean = false): Promise<void> {
     if (this.state.connecting || this.state.busy) { return; }
-    this.disconnect();
+    this.disconnect(false);
+    if (!automatic) { this.reconnectPaused = false; this.reconnectAttempts = 0; this.reconnectAfter = 0; }
     const generation: number = this.generation;
     this.state.connecting = true;
     this.state.error = '';
@@ -375,13 +452,16 @@ export class HeadphoneController {
         this.state.notice = '此型号尚未完成实机验证，已按耳机返回能力加载功能。' + this.state.notice;
       }
       this.log('连接并读取状态成功');
+      this.reconnectAttempts = 0;
       this.startPolling();
     } catch (error) {
       if (generation === this.generation) { this.failure((error as Error).message); }
     }
   }
 
-  disconnect(): void {
+  disconnect(manual: boolean = true): void {
+    this.cancelReconnect();
+    if (manual) { this.reconnectPaused = true; }
     ++this.generation;
     this.background.stop();
     this.state.backgroundActive = false;
@@ -605,6 +685,8 @@ export class HeadphoneController {
     const generation: number = this.generation;
     this.state.busy = true;
     this.state.poweringOff = true;
+    this.reconnectPaused = true;
+    this.cancelReconnect();
     this.state.error = '';
     this.state.notice = '';
     if (this.polling >= 0) { clearInterval(this.polling); this.polling = -1; }
@@ -670,11 +752,11 @@ export class HeadphoneController {
 
   private failure(message: string): void {
     const requestedPowerOff: boolean = this.state.poweringOff;
-    this.disconnect();
+    this.disconnect(false);
     if (requestedPowerOff) {
       this.state.notice = '关机期间控制连接已断开，未能确认指令结果。请检查耳机是否已关机。';
       this.log('关机期间连接断开，结果未确认：' + message);
-    } else { this.showError(message); }
+    } else { this.showError(message); this.scheduleReconnect(); }
   }
   private showError(message: string): void { this.state.error = message; this.log(message); }
   private log(message: string): void {

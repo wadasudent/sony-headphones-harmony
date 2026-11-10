@@ -492,6 +492,16 @@ struct Index {
   @Builder
   MorePage() {
     Column({ space: 16 }) {
+      Row({ space: 12 }) {
+        Column({ space: 6 }) {
+          Text('智能重连').fontSize(18).fontWeight(FontWeight.Bold).fontColor($r('app.color.text_primary'))
+          Text('应用在前台时，自动连接已接入系统音频的上次耳机。失败最多重试三次；手动断开后本次运行暂停。')
+            .fontSize(12).lineHeight(20).fontColor($r('app.color.text_secondary'))
+        }.alignItems(HorizontalAlign.Start).layoutWeight(1)
+        this.StateSwitch($r('app.string.auto_reconnect'), this.state.autoReconnect, true, () => {
+          headphones.setAutoReconnect(!this.state.autoReconnect);
+        })
+      }.width('100%').padding(20).backgroundColor($r('app.color.surface')).borderRadius(24)
       if (this.state.connected && (this.state.touchAvailable || this.state.powerOffAvailable)) { this.DeviceControls() }
       Column({ space: 10 }) {
         Text($r('app.string.widget_guide_title')).fontSize(18).fontWeight(FontWeight.Bold)

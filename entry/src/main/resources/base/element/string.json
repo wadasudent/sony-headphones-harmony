@@ -1,6 +1,10 @@
 {
   "string": [
     {
+      "name": "auto_reconnect",
+      "value": "智能重连"
+    },
+    {
       "name": "module_desc",
       "value": "索尼耳机原生控制助手"
     },
