@@ -3,8 +3,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
 const path = require('node:path');
-const ts = require(path.join(process.env.DEVECO_SDK_HOME || 'D:/HuaweiDevTools/DevEcoStudio26/sdk',
-  'default/openharmony/ets/build-tools/ets-loader/node_modules/typescript/lib/typescript.js'));
+const ts = require('./sdk-typescript.cjs');
 function load(file, kits, globals = {}) {
   const source = fs.readFileSync(path.join(__dirname, '../entry/src/main/ets/services', file), 'utf8');
   const js = ts.transpileModule(source, { compilerOptions: {

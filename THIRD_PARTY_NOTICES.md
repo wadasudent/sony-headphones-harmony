@@ -11,7 +11,7 @@
 ## SonyHeadphonesClient attribution and license
 
 The protocol implementation in `entry/src/main/ets/protocol/MdrCore.ts` and the
-RFCOMM lifecycle handling in `services/Headphones.ets` are informed by / ported from
+RFCOMM lifecycle handling in `entry/src/main/ets/services/Headphones.ets` are informed by / ported from
 SonyHeadphonesClient, by mos9527, Amr Satrio and contributors.
 
 Upstream: https://github.com/mos9527/SonyHeadphonesClient

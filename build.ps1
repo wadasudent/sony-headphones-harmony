@@ -1,11 +1,5 @@
-param([string]$ToolHome = '')
+param([string]$ToolHome = $env:DEVECO_STUDIO_HOME, [switch]$CheckOnly)
 $ErrorActionPreference = 'Stop'
-
-# Keep per-developer signing configuration outside Git.
-$localBuildProfile = Join-Path $PSScriptRoot 'build-profile.json5'
-if (-not (Test-Path -LiteralPath $localBuildProfile -PathType Leaf)) {
-  Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'build-profile.example.json5') -Destination $localBuildProfile
-}
 
 function Find-File([string[]]$Candidates) {
   foreach ($candidate in $Candidates) {
@@ -17,9 +11,15 @@ function Find-File([string[]]$Candidates) {
 }
 
 if (-not $ToolHome) {
-  $roots = @('D:\HuaweiDevTools\DevEcoStudio26', 'C:\Program Files\Huawei\DevEco Studio', 'C:\Program Files\Huawei\DevEcoStudio')
+  $roots = @()
+  if ($env:DEVECO_SDK_HOME) { $roots += Split-Path -Parent $env:DEVECO_SDK_HOME }
+  $localToolPath = Join-Path $PSScriptRoot '.local\deveco-home.txt'
+  if (Test-Path -LiteralPath $localToolPath -PathType Leaf) {
+    $roots += (Get-Content -LiteralPath $localToolPath -TotalCount 1 -Encoding UTF8)
+  }
+  $roots += @("$env:ProgramFiles\Huawei\DevEco Studio", "$env:ProgramFiles\Huawei\DevEcoStudio")
   foreach ($root in $roots) {
-    if (Test-Path -LiteralPath (Join-Path $root 'sdk')) { $ToolHome = $root; break }
+    if ($root -and (Test-Path -LiteralPath ([IO.Path]::Combine($root, 'sdk')) -PathType Container)) { $ToolHome = $root; break }
   }
 }
 if (-not $ToolHome -or -not (Test-Path -LiteralPath $ToolHome -PathType Container)) {
@@ -57,6 +57,19 @@ $env:OHOS_SDK_HOME = Join-Path $sdkDirectory 'default\openharmony'
 if ($nodeBinary) { $env:PATH = (Split-Path -Parent $nodeBinary) + ';' + $env:PATH }
 Push-Location -LiteralPath $PSScriptRoot
 try {
+  if ($CheckOnly) {
+    if (-not $nodeBinary) { throw 'DevEco Node.js runtime not found. Check -ToolHome.' }
+    foreach ($check in @('equalizer', 'widgets', 'reconnect')) {
+      & $nodeBinary "checks/$check.cjs"
+      if ($LASTEXITCODE -ne 0) { throw "Check failed: $check ($LASTEXITCODE)" }
+    }
+    return
+  }
+  # The template contains no signing credentials. Preserve any existing developer profile.
+  $localBuildProfile = Join-Path $PSScriptRoot 'build-profile.json5'
+  if (-not (Test-Path -LiteralPath $localBuildProfile -PathType Leaf)) {
+    Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'build-profile.example.json5') -Destination $localBuildProfile
+  }
   if ($ohpmScript) {
     & $ohpmScript install
     if ($LASTEXITCODE -ne 0) { throw "ohpm failed: $LASTEXITCODE" }

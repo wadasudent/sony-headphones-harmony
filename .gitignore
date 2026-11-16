@@ -1,6 +1,7 @@
 # Local configuration; use the tracked example on a fresh checkout.
 /build-profile.json5
 /local.properties
+/.local/
 .env
 .env.*
 !.env.example
@@ -15,8 +16,10 @@ node_modules/
 
 # Signing material must stay local.
 *.p12
+*.pfx
 *.p7b
 *.cer
+*.crt
 *.jks
 *.keystore
 *.key

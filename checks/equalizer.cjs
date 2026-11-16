@@ -2,8 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
-const ts = require(path.join(process.env.DEVECO_SDK_HOME || 'D:/HuaweiDevTools/DevEcoStudio26/sdk',
-  'default/openharmony/ets/build-tools/ets-loader/node_modules/typescript/lib/typescript.js'));
+const ts = require('./sdk-typescript.cjs');
 const root = path.join(__dirname, '../entry/src/main/ets');
 function load(file, kits = {}) {
   const exports = {};

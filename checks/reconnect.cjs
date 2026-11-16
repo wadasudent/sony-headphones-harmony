@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
 const assert = require('node:assert/strict');
-const ts = require('D:/HuaweiDevTools/DevEcoStudio26/sdk/default/openharmony/ets/build-tools/ets-loader/node_modules/typescript/lib/typescript.js');
+const ts = require('./sdk-typescript.cjs');
 let now = 100000, next = 0, attempts = 0, paired = ['saved'], audio = ['saved'], denied = false;
 const timers = new Map(), values = new Map([['device', 'saved']]);
 const profile = { getConnectedDevices: () => audio, on() {}, off() {} };
