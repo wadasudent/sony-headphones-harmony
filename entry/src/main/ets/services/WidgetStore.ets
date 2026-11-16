@@ -1,12 +1,14 @@
 import { common } from '@kit.AbilityKit';
 import { preferences } from '@kit.ArkData';
 import { formBindingData, formProvider } from '@kit.FormKit';
+import { BatteryPart } from '../protocol/MdrCore';
 
 export class WidgetSnapshot {
   connected: boolean = false;
   model: string = '索尼耳机';
   battery: number = -1;
   charging: boolean = false;
+  batteryParts: BatteryPart[] = [];
   mode: number = -1;
   updated: number = 0;
 }
@@ -17,6 +19,7 @@ export class WidgetView {
   model: string = '索尼耳机助手';
   dimension: number = 2;
   batteryText: string = '—';
+  batteryParts: BatteryPart[] = [];
   modeText: string = '未读取';
   updateText: string = '点击连接耳机';
   mode: number = -1;
@@ -51,6 +54,13 @@ export function readWidget(context: common.Context, formId: string = ''): Widget
     view.batteryText = data.battery >= 0 ? data.battery + '%' : '—';
     view.battery = Math.max(0, data.battery);
     view.charging = data.charging;
+    if (Array.isArray(data.batteryParts)) {
+      for (const part of data.batteryParts) {
+        if (part && (part.label === '左耳' || part.label === '右耳' || part.label === '充电盒' || part.label === '耳机')) {
+          view.batteryParts.push(new BatteryPart(part.label, part.level, part.charging === true));
+        }
+      }
+    }
     view.mode = data.mode;
     view.modeText = data.mode === 1 ? '降噪' : (data.mode === 2 ? '环境声' : (data.mode === 0 ? '关闭' : '未读取'));
     const time = new Date(data.updated);
@@ -69,6 +79,7 @@ export async function publishWidget(context: common.Context, data: WidgetSnapsho
       if (previous.updated > 0) {
         data.model = previous.model || '索尼耳机';
         data.battery = previous.battery;
+        data.batteryParts = previous.batteryParts || [];
         data.mode = previous.mode;
         data.charging = previous.charging;
         data.updated = previous.updated;

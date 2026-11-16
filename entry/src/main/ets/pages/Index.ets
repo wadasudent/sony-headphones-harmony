@@ -2,7 +2,7 @@ import { common } from '@kit.AbilityKit';
 import { deviceInfo } from '@kit.BasicServicesKit';
 import { HdsNavigation, HdsNavigationTitleMode, HdsTabs, hdsMaterial } from '@kit.UIDesignKit';
 import { HeadphoneState, PairedHeadphone, headphones } from '../services/Headphones';
-import { NoiseMode, EQ_FREQUENCIES, eqPresetName } from '../protocol/MdrCore';
+import { BatteryPart, NoiseMode, EQ_FREQUENCIES, eqPresetName } from '../protocol/MdrCore';
 
 @Entry
 @ComponentV2
@@ -103,6 +103,23 @@ struct Index {
   }
 
   @Builder
+  BatteryGauge(part: BatteryPart) {
+    Column({ space: 7 }) {
+      Stack({ alignContent: Alignment.Center }) {
+        Progress({ value: Math.max(0, part.level), total: 100, type: ProgressType.Ring })
+          .width(62).height(62).color(part.charging ? $r('app.color.success') : $r('app.color.accent'))
+          .backgroundColor($r('app.color.hero_halo')).style({ strokeWidth: 4 })
+        Text(part.level >= 0 ? part.level + '%' : '—').fontSize(16).fontWeight(FontWeight.Medium)
+          .fontColor($r('app.color.text_primary')).maxLines(1)
+      }
+      Text(part.label).fontSize(13).fontColor($r('app.color.text_secondary'))
+      if (part.charging) { Text('充电中').fontSize(11).fontColor($r('app.color.success')) }
+    }.layoutWeight(1).accessibilityGroup(true)
+      .accessibilityText(part.label + (part.level >= 0 ? '电量 ' + part.level + '%' : '电量未读取') +
+        (part.charging ? '，充电中' : ''))
+  }
+
+  @Builder
   DeviceHero() {
     Column({ space: 10 }) {
       Row({ space: 8 }) {
@@ -112,24 +129,34 @@ struct Index {
         }.alignItems(HorizontalAlign.Start).layoutWeight(1)
         this.StatusBadge()
       }.width('100%')
-      Stack({ alignContent: Alignment.Center }) {
-        Progress({ value: this.state.battery < 0 ? 0 : this.state.battery, total: 100, type: ProgressType.Ring })
-          .width(184).height(184).color($r('app.color.accent'))
-          .backgroundColor($r('app.color.hero_halo')).style({ strokeWidth: 5 })
-          .accessibilityText(this.state.battery < 0 ? '电量未读取' : '耳机电量 ' + this.state.battery + '%')
-        Image($r('app.media.headphones_hero')).width(208).height(152).objectFit(ImageFit.Contain)
-          .accessibilityText($r('app.string.headphone_illustration'))
-      }.height(200).width('100%')
+      if (this.state.connected && this.state.batteryParts.length > 0) {
+        Row({ space: 4 }) {
+          ForEach(this.state.batteryParts, (part: BatteryPart) => {
+            this.BatteryGauge(part)
+          }, (part: BatteryPart) => part.label + ':' + part.level + ':' + part.charging)
+        }.width('100%').padding({ top: 16, bottom: 12 }).alignItems(VerticalAlign.Top)
+      } else {
+        Stack({ alignContent: Alignment.Center }) {
+          Progress({ value: this.state.battery < 0 ? 0 : this.state.battery, total: 100, type: ProgressType.Ring })
+            .width(184).height(184).color($r('app.color.accent'))
+            .backgroundColor($r('app.color.hero_halo')).style({ strokeWidth: 5 })
+            .accessibilityText(this.state.battery < 0 ? '电量未读取' : '耳机电量 ' + this.state.battery + '%')
+          Image($r('app.media.headphones_hero')).width(208).height(152).objectFit(ImageFit.Contain)
+            .accessibilityText($r('app.string.headphone_illustration'))
+        }.height(200).width('100%')
+      }
       if (this.state.connected) {
         Row({ space: 12 }) {
-          this.StatusItem($r('app.media.ic_battery'), $r('app.string.battery'),
-            this.state.battery < 0 ? '—' : this.state.battery.toString() + '%')
-          Divider().vertical(true).height(30).color($r('app.color.separator'))
+          if (this.state.batteryParts.length === 0) {
+            this.StatusItem($r('app.media.ic_battery'), $r('app.string.battery'),
+              this.state.battery < 0 ? '—' : this.state.battery.toString() + '%')
+            Divider().vertical(true).height(30).color($r('app.color.separator'))
+          }
           this.StatusItem($r('app.media.ic_noise'), $r('app.string.listening_mode'),
             this.state.noiseMode === NoiseMode.Cancel ? '降噪' : (this.state.noiseMode === NoiseMode.Ambient ? '环境声' :
               (this.state.noiseMode === NoiseMode.Off ? '关闭' : '未读取')))
         }.width('100%').padding({ top: 2, bottom: 8 })
-        if (this.state.charging) {
+        if (this.state.batteryParts.length === 0 && this.state.charging) {
           Text($r('app.string.charging')).fontSize(12).fontColor($r('app.color.success'))
         }
         Button(this.state.busy ? $r('app.string.syncing') : $r('app.string.refresh_status'))

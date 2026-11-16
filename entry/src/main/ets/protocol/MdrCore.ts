@@ -116,6 +116,7 @@ class Request {
   payload: Uint8Array;
   replyCommand: number;
   replyType: number;
+  allowMissingReply: boolean;
   resolve: (frame: MdrFrame) => void;
   reject: (error: Error) => void;
   acked: boolean = false;
@@ -123,10 +124,12 @@ class Request {
   attempts: number = 0;
   timer: number = -1;
   constructor(payload: Uint8Array, replyCommand: number, replyType: number,
+    allowMissingReply: boolean,
     resolve: (frame: MdrFrame) => void, reject: (error: Error) => void) {
     this.payload = payload;
     this.replyCommand = replyCommand;
     this.replyType = replyType;
+    this.allowMissingReply = allowMissingReply;
     this.resolve = resolve;
     this.reject = reject;
   }
@@ -153,11 +156,12 @@ export class MdrLink {
     this.onFailure = onFailure;
   }
 
-  request(payload: number[], replyCommand: number = -1, replyType: number = -1): Promise<MdrFrame> {
+  request(payload: number[], replyCommand: number = -1, replyType: number = -1,
+    allowMissingReply: boolean = false): Promise<MdrFrame> {
     return new Promise<MdrFrame>((resolve: (frame: MdrFrame) => void, reject: (error: Error) => void) => {
       if (this.closed) { reject(new Error('控制连接已关闭')); return; }
       if (this.queue.length >= 32) { reject(new Error('操作过于频繁，请稍后再试')); return; }
-      this.queue.push(new Request(new Uint8Array(payload), replyCommand, replyType, resolve, reject));
+      this.queue.push(new Request(new Uint8Array(payload), replyCommand, replyType, allowMissingReply, resolve, reject));
       this.pump();
     });
   }
@@ -176,7 +180,11 @@ export class MdrLink {
           if (pending.replyCommand < 0) { this.complete(frame); }
           else if (pending.reply !== undefined) { this.complete(pending.reply); }
           else {
-            pending.timer = this.clock.later(4000, () => { this.fail('耳机确认收到指令，但未返回查询结果，请重新连接'); });
+            pending.timer = this.clock.later(4000, () => {
+              // An unavailable earbud/case reading may be omitted after its query is acknowledged.
+              if (pending.allowMissingReply) { this.complete(frame); }
+              else { this.fail('耳机确认收到指令，但未返回查询结果，请重新连接'); }
+            });
           }
         }
         continue;
@@ -186,7 +194,8 @@ export class MdrLink {
       if (frame.type === TABLE1) {
         this.onData(frame);
         if (pending !== undefined && pending.replyCommand >= 0 &&
-          frame.payload.length > 0 && frame.payload[0] === pending.replyCommand &&
+          frame.payload.length > 0 && (frame.payload[0] === pending.replyCommand ||
+            (pending.allowMissingReply && pending.replyCommand === 0x23 && frame.payload[0] === 0x25)) &&
           (pending.replyType < 0 || (frame.payload.length > 1 && frame.payload[1] === pending.replyType))) {
           pending.reply = frame;
           if (pending.acked) { this.complete(frame); }
@@ -267,6 +276,20 @@ export function eqPresetName(id: number): string {
   }
 }
 
+export class BatteryPart {
+  label: string;
+  level: number;
+  charging: boolean;
+
+  constructor(label: string, level: number = -1, charging: boolean = false) {
+    this.label = label;
+    this.level = Number.isInteger(level) && level >= 0 && level <= 100 ? level : -1;
+    this.charging = this.level >= 0 && charging;
+  }
+}
+
+enum BatteryType { Headset = 0, LeftRight = 1, Case = 2 }
+
 export class HeadphoneSnapshot {
   eqCapability: boolean = false;
   eqEnabled: boolean = false;
@@ -279,6 +302,9 @@ export class HeadphoneSnapshot {
   functions: number[] = [];
   battery: number = -1;
   charging: boolean = false;
+  leftBattery: BatteryPart = new BatteryPart('左耳');
+  rightBattery: BatteryPart = new BatteryPart('右耳');
+  caseBattery: BatteryPart = new BatteryPart('充电盒');
   codec: number = -1;
   noiseType: number = -1;
   noiseMode: NoiseMode = NoiseMode.Unknown;
@@ -389,12 +415,8 @@ export class Xm6Protocol {
       this.snapshot.codec = p[2];
       return true;
     }
-    if ((p[0] === 0x23 || p[0] === 0x25) &&
-      ((p[1] === 0 && p.length === 4) || (p[1] === 8 && p.length === 5))) {
-      if (p[2] > 100 || p[3] > 3) { return false; }
-      this.snapshot.battery = p[2];
-      this.snapshot.charging = p[3] === 1;
-      return true;
+    if (p[0] === 0x23 || p[0] === 0x25) {
+      return this.consumeBattery(p);
     }
     if ((p[0] === 0x67 || p[0] === 0x69) && p[1] === this.snapshot.noiseType &&
       ((p[1] === 0x19 && p.length === 9) || (p[1] === 0x17 && p.length === 7))) {
@@ -449,6 +471,57 @@ export class Xm6Protocol {
 
   supports(functionId: number): boolean { return this.snapshot.functions.indexOf(functionId) >= 0; }
 
+  private batteryInquiry(type: BatteryType): number {
+    // Table 1 advertises basic inquiries at 0x20..22 and threshold variants at 0x28..2a.
+    if (this.supports(0x20 + type)) { return type; }
+    return this.supports(0x28 + type) ? 8 + type : -1;
+  }
+
+  private consumeBattery(p: Uint8Array): boolean {
+    const type: number = p[1];
+    if ((type === 0 && p.length === 4) || (type === 8 && p.length === 5)) {
+      if (p[2] > 100 || p[3] > 3) { return false; }
+      this.snapshot.battery = p[2];
+      this.snapshot.charging = p[3] === 1;
+      return true;
+    }
+    if (!this.supports(0x20 + type)) { return false; }
+    if ((type === 1 && p.length === 6) || (type === 9 && p.length === 8)) {
+      // The thresholds, when present, follow both level/status pairs.
+      this.snapshot.leftBattery = new BatteryPart('左耳', p[2], p[3] === 1);
+      this.snapshot.rightBattery = new BatteryPart('右耳', p[4], p[5] === 1);
+      return true;
+    }
+    if ((type === 2 && p.length === 4) || (type === 10 && p.length === 5)) {
+      this.snapshot.caseBattery = new BatteryPart('充电盒', p[2], p[3] === 1);
+      return true;
+    }
+    return false;
+  }
+
+  batteryParts(): BatteryPart[] {
+    const parts: BatteryPart[] = [];
+    if (this.batteryInquiry(BatteryType.LeftRight) >= 0) {
+      parts.push(this.snapshot.leftBattery, this.snapshot.rightBattery);
+    }
+    if (this.batteryInquiry(BatteryType.Case) >= 0) {
+      if (parts.length === 0 && this.batteryInquiry(BatteryType.Headset) >= 0) {
+        parts.push(new BatteryPart('耳机', this.snapshot.battery, this.snapshot.charging));
+      }
+      parts.push(this.snapshot.caseBattery);
+    }
+    return parts;
+  }
+
+  clearBattery(inquiry: number): void {
+    if (inquiry === 1 || inquiry === 9) {
+      this.snapshot.leftBattery = new BatteryPart('左耳');
+      this.snapshot.rightBattery = new BatteryPart('右耳');
+    } else if (inquiry === 2 || inquiry === 10) {
+      this.snapshot.caseBattery = new BatteryPart('充电盒');
+    }
+  }
+
   capabilityRequests(): number[][] {
     const requests: number[][] = [];
     if (this.supports(0x57)) { requests.push([0x50, 4, 1]); }
@@ -490,8 +563,11 @@ export class Xm6Protocol {
     if (this.supports(0x57) && this.snapshot.eqCapability) {
       requests.push([0x52, 4], [0x56, 4]);
     }
-    if (this.supports(0x20)) { requests.push([0x22, 0]); }
-    else if (this.supports(0x28)) { requests.push([0x22, 8]); }
+    const pair: number = this.batteryInquiry(BatteryType.LeftRight);
+    const headset: number = pair >= 0 ? pair : this.batteryInquiry(BatteryType.Headset);
+    const cradle: number = this.batteryInquiry(BatteryType.Case);
+    if (headset >= 0) { requests.push([0x22, headset]); }
+    if (cradle >= 0) { requests.push([0x22, cradle]); }
     if (this.supports(0x12)) { requests.push([0x12, 2]); }
     if (this.snapshot.noiseType >= 0) { requests.push([0x66, this.snapshot.noiseType]); }
     // E1 is verified in upstream's query/set implementation. Do not guess E3/E7 layouts.

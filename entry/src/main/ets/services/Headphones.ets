@@ -5,7 +5,7 @@ import { BackgroundSession } from './BackgroundSession';
 import { isSonyHeadphoneName } from '../protocol/DeviceNames';
 import { WidgetSnapshot, publishWidget, widgetPreferences } from './WidgetStore';
 import {
-  MDR_UUID, MdrClock, MdrFrame, MdrLink, MdrTransport, HeadphoneSnapshot,
+  MDR_UUID, MdrClock, MdrFrame, MdrLink, MdrTransport, HeadphoneSnapshot, BatteryPart,
   Xm6Protocol, NoiseMode, codecName
 } from '../protocol/MdrCore';
 
@@ -29,6 +29,7 @@ export class HeadphoneState {
   @Trace firmware: string = '';
   @Trace battery: number = -1;
   @Trace charging: boolean = false;
+  @Trace batteryParts: BatteryPart[] = [];
   @Trace codec: string = '未读取';
   @Trace noiseMode: NoiseMode = NoiseMode.Unknown;
   @Trace ambientLevel: number = -1;
@@ -310,6 +311,10 @@ export class HeadphoneController {
     finally { this.widgetActionRunning = false; }
   }
 
+  private widgetContentSignature(data: WidgetSnapshot): string {
+    return JSON.stringify([data.connected, data.model, data.battery, data.charging, data.batteryParts, data.mode]);
+  }
+
   private updateWidget(immediate: boolean = false): void {
     const context = this.context;
     if (context === undefined) { return; }
@@ -317,13 +322,14 @@ export class HeadphoneController {
     data.connected = this.state.connected;
     if (data.connected) {
       data.battery = this.state.battery;
+      data.batteryParts = this.state.batteryParts.slice();
       data.model = this.state.model;
       data.charging = this.state.charging;
       data.mode = this.state.noiseMode;
       data.updated = Date.now();
     }
-    const signature = JSON.stringify([data.connected, data.model, data.battery, data.charging, data.mode]);
-    if (!immediate && signature === this.widgetSignature && Date.now() - this.widgetPublishedAt < 60000) { return; }
+    if (!immediate && !this.widgetWriting && this.widgetPending === undefined &&
+      this.widgetContentSignature(data) === this.widgetSignature && Date.now() - this.widgetPublishedAt < 60000) { return; }
     this.widgetPending = data;
     if (immediate) {
       if (this.widgetTimer >= 0) { clearTimeout(this.widgetTimer); this.widgetTimer = -1; }
@@ -342,7 +348,8 @@ export class HeadphoneController {
       while (this.widgetPending !== undefined) {
         const data = this.widgetPending;
         this.widgetPending = undefined;
-        const signature = JSON.stringify([data.connected, data.model, data.battery, data.charging, data.mode]);
+        const signature = this.widgetContentSignature(data);
+        if (signature === this.widgetSignature && Date.now() - this.widgetPublishedAt < 60000) { continue; }
         try {
           await publishWidget(context, data);
           this.widgetSignature = signature;
@@ -443,7 +450,7 @@ export class HeadphoneController {
           this.state.backgroundActive = true;
         } catch (_) {
           this.checkGeneration(generation);
-          this.state.notice = '后台连接未获系统支持，离开应用后将断开控制连接；卡片保留上次读取值。';
+          this.state.notice = '离开应用后系统将断开耳机控制连接，桌面卡片会显示断链。';
         }
       }
       this.checkGeneration(generation);
@@ -475,6 +482,8 @@ export class HeadphoneController {
     this.state.connecting = false;
     this.state.busy = false;
     this.state.battery = -1;
+    this.state.charging = false;
+    this.state.batteryParts = [];
     this.state.codec = '未读取';
     this.state.noiseMode = NoiseMode.Unknown;
     this.state.ambientLevel = -1;
@@ -582,10 +591,17 @@ export class HeadphoneController {
   }
 
   private async readStatus(link: MdrLink): Promise<void> {
+    const generation: number = this.generation;
     const requests: number[][] = this.protocol.statusRequests();
     for (let i: number = 0; i < requests.length; i++) {
       const request: number[] = requests[i];
-      await link.request(request, request[0] + 1, request[1]);
+      const partBattery: boolean = request[0] === 0x22 && request[1] !== 0 && request[1] !== 8;
+      const response: MdrFrame = await link.request(request, request[0] + 1, request[1], partBattery);
+      this.checkGeneration(generation);
+      if (partBattery && !this.protocol.consume(response)) {
+        this.protocol.clearBattery(request[1]);
+        this.adopt(this.protocol.snapshot);
+      }
     }
   }
 
@@ -732,6 +748,7 @@ export class HeadphoneController {
     this.state.firmware = snapshot.firmware;
     this.state.battery = snapshot.battery;
     this.state.charging = snapshot.charging;
+    this.state.batteryParts = this.protocol.batteryParts();
     this.state.codec = codecName(snapshot.codec);
     this.state.noiseMode = snapshot.noiseMode;
     this.state.ambientLevel = snapshot.ambientLevel;

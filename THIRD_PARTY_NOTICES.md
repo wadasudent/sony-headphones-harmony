@@ -19,9 +19,9 @@ Analyzed commit: 68dfced0403b38114b77f2b374e606ce12a206a8 (v1-compat branch).
 
 Reference files: Command.cpp, Headphones.cpp, HeadphonesV2.cpp,
 HeadphonesV2T1.cpp, ProtocolV2.hpp, ProtocolV2T1.hpp, RfcommSession.ets.
-Early fixtures, now archived outside this source repository, were a small
-selection of upstream's publicly recorded WF-1000XM5 frames. They are not
-XM6 captures or HarmonyOS 7 test results.
+The battery regression check in `checks/widgets.cjs` replays the model name,
+capability table and battery reports from the upstream [WF-1000XM5 firmware 6.1.0 recordings](https://github.com/mos9527/SonyHeadphonesClient/tree/68dfced0403b38114b77f2b374e606ce12a206a8/tests/WF-1000XM5-6.1.0).
+These recordings establish the protocol values used in the replay.
 
 This independent application is not affiliated with or endorsed by Sony or Huawei.
 The original license follows in full.
