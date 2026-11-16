@@ -522,7 +522,7 @@ struct Index {
       Row({ space: 12 }) {
         Column({ space: 6 }) {
           Text('智能重连').fontSize(18).fontWeight(FontWeight.Bold).fontColor($r('app.color.text_primary'))
-          Text('应用在前台时，自动连接已接入系统音频的上次耳机。失败最多重试三次；手动断开后本次运行暂停。')
+          Text('默认开启。打开应用后自动连接系统已连接的索尼耳机，优先上次使用的设备；手动断开后本次运行暂停。')
             .fontSize(12).lineHeight(20).fontColor($r('app.color.text_secondary'))
         }.alignItems(HorizontalAlign.Start).layoutWeight(1)
         this.StateSwitch($r('app.string.auto_reconnect'), this.state.autoReconnect, true, () => {

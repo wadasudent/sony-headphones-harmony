@@ -52,7 +52,7 @@ export class HeadphoneState {
   @Trace eqPreset: number = -1;
   @Trace eqPresets: number[] = [];
   @Trace eqBands: number[] = [];
-  @Trace autoReconnect: boolean = false;
+  @Trace autoReconnect: boolean = true;
 }
 
 class NativeClock implements MdrClock {
@@ -199,8 +199,11 @@ export class HeadphoneController {
 
   initialize(context: common.UIAbilityContext): void {
     this.context = context;
-    try { this.state.autoReconnect = widgetPreferences(context).getSync('autoReconnect', false) === true; }
-    catch (_) { this.state.autoReconnect = false; }
+    this.reconnectPaused = false;
+    this.reconnectAttempts = 0;
+    this.reconnectAfter = 0;
+    try { this.state.autoReconnect = widgetPreferences(context).getSync('autoReconnect', true) === true; }
+    catch (_) { this.state.autoReconnect = true; }
     this.background.initialize(context, () => {
       this.state.backgroundActive = false;
       if (!this.foreground) { this.disconnect(); }
@@ -266,7 +269,7 @@ export class HeadphoneController {
       if (Date.now() < this.reconnectAfter) { return; }
       this.reconnectAttempts = 0;
     }
-    const delays: number[] = [2000, 5000, 15000];
+    const delays: number[] = [0, 5000, 15000];
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = -1;
       this.tryReconnect();
@@ -275,17 +278,37 @@ export class HeadphoneController {
 
   private async tryReconnect(): Promise<void> {
     if (!this.foreground || !this.state.autoReconnect || this.reconnectPaused || this.state.connected ||
-      this.state.connecting || this.state.busy || this.context === undefined) { return; }
+      this.state.connecting || this.state.busy || this.widgetActionRunning || this.context === undefined) { return; }
     try {
       if (access.getState() !== access.BluetoothState.STATE_ON) { return; }
       const address = widgetPreferences(this.context).getSync('device', '') as string;
-      // Only the saved, MDR-verified device already connected for system audio.
-      const connected = a2dp.createA2dpSrcProfile().getConnectedDevices();
-      if (!address || connected.indexOf(address) < 0 || connection.getPairedDevices().indexOf(address) < 0) { return; }
+      const paired: string[] = connection.getPairedDevices();
+      const connected: string[] = a2dp.createA2dpSrcProfile().getConnectedDevices()
+        .filter((id: string) => paired.indexOf(id) >= 0);
+      const devices: PairedHeadphone[] = this.pairedHeadphones(connected, address);
+      const device: PairedHeadphone | undefined = devices.find((item: PairedHeadphone) => item.address === address) ||
+        (devices.length === 1 ? devices[0] : undefined);
+      if (device === undefined) {
+        if (devices.length > 1) { this.state.notice = '检测到多副已连接的索尼耳机，请选择要控制的耳机。'; }
+        return;
+      }
       ++this.reconnectAttempts;
       this.reconnectAfter = Date.now() + 60000;
-      await this.connect(new PairedHeadphone(address, '索尼耳机'), true);
+      await this.connect(device, true);
     } catch (_) { /* Permission revoked / unsupported profile: wait for user action. */ }
+  }
+
+  private pairedHeadphones(addresses: string[], verifiedAddress: string): PairedHeadphone[] {
+    const devices: PairedHeadphone[] = [];
+    for (const address of addresses) {
+      let name: string = '';
+      try { name = connection.getRemoteDeviceName(address); } catch (_) { /* Name may not be cached. */ }
+      // The saved address is trusted only after the MDR model handshake in connect().
+      if (isSonyHeadphoneName(name) || address === verifiedAddress) {
+        devices.push(new PairedHeadphone(address, name || '索尼耳机（已验证）'));
+      }
+    }
+    return devices;
   }
 
   // Widget routing deliberately enters the foreground so permissions and connection
@@ -370,21 +393,11 @@ export class HeadphoneController {
         throw new Error('需要蓝牙权限才能查找已配对的耳机');
       }
       if (access.getState() !== access.BluetoothState.STATE_ON) { throw new Error('请先打开系统蓝牙'); }
-      const devices: PairedHeadphone[] = [];
       let verifiedAddress: string = '';
       try { verifiedAddress = widgetPreferences(context).getSync('device', '') as string; }
       catch (_) { /* Default-name matching remains available if local storage fails. */ }
       const addresses: string[] = connection.getPairedDevices();
-      for (let i: number = 0; i < addresses.length; i++) {
-        let name: string = '';
-        try { name = connection.getRemoteDeviceName(addresses[i]); } catch (_) { /* Name may not be cached. */ }
-        // Paired-device names do not expose a reliable manufacturer field. Match Sony
-        // branding and common model families, plus a previously verified device.
-        // The saved address is written only after model validation in connect().
-        if (isSonyHeadphoneName(name) || addresses[i] === verifiedAddress) {
-          devices.push(new PairedHeadphone(addresses[i], name || '索尼耳机（已验证）'));
-        }
-      }
+      const devices: PairedHeadphone[] = this.pairedHeadphones(addresses, verifiedAddress);
       this.state.devices = devices;
       this.state.error = '';
       this.state.message = devices.length > 0 ? '选择已配对的索尼耳机，功能以耳机实际支持为准' : '未找到已配对的索尼耳机，请先在系统蓝牙设置中配对';
