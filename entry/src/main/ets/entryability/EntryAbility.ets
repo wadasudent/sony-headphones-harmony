@@ -3,10 +3,12 @@ import { window } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { headphones } from '../services/Headphones';
+import { appearance } from '../services/Appearance';
 
 export default class EntryAbility extends UIAbility {
   private pendingWidgetMode: number = -2;
   onCreate(want: Want, _launchParam: AbilityConstant.LaunchParam): void {
+    appearance.load(this.context);
     headphones.initialize(this.context);
     this.captureWidget(want);
   }

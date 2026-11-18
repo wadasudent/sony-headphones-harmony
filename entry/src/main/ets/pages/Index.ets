@@ -1,13 +1,15 @@
-import { common } from '@kit.AbilityKit';
+import { common, ConfigurationConstant } from '@kit.AbilityKit';
 import { deviceInfo } from '@kit.BasicServicesKit';
 import { HdsNavigation, HdsNavigationTitleMode, HdsTabs, hdsMaterial } from '@kit.UIDesignKit';
 import { HeadphoneState, PairedHeadphone, headphones } from '../services/Headphones';
+import { AccentPalette, Appearance, ColorMode, accentPalettes, appearance } from '../services/Appearance';
 import { BatteryPart, NoiseMode, EQ_FREQUENCIES, eqPresetName } from '../protocol/MdrCore';
 
 @Entry
 @ComponentV2
 struct Index {
   @Local state: HeadphoneState = headphones.state;
+  @Local theme: Appearance = appearance;
   @Local currentTab: number = 0;
   @Local showDevices: boolean = false;
   @Local showLogs: boolean = false;
@@ -16,6 +18,11 @@ struct Index {
   @Local eqDraft: number[] = [];
   @Local eqBase: number[] = [];
   @Local eqBasePreset: number = -1;
+
+  private changeAppearance(mode: ColorMode, palette: AccentPalette): void {
+    const context = this.getUIContext().getHostContext() as common.UIAbilityContext | undefined;
+    if (context !== undefined) { this.theme.update(context, mode, palette); }
+  }
 
   private beginEqualizer(): void {
     this.eqDraft = this.state.eqBands.slice();
@@ -107,7 +114,7 @@ struct Index {
     Column({ space: 7 }) {
       Stack({ alignContent: Alignment.Center }) {
         Progress({ value: Math.max(0, part.level), total: 100, type: ProgressType.Ring })
-          .width(62).height(62).color(part.charging ? $r('app.color.success') : $r('app.color.accent'))
+          .width(62).height(62).color(part.charging ? $r('app.color.success') : this.theme.palette.color)
           .backgroundColor($r('app.color.hero_halo')).style({ strokeWidth: 4 })
         Text(part.level >= 0 ? part.level + '%' : '—').fontSize(16).fontWeight(FontWeight.Medium)
           .fontColor($r('app.color.text_primary')).maxLines(1)
@@ -138,7 +145,7 @@ struct Index {
       } else {
         Stack({ alignContent: Alignment.Center }) {
           Progress({ value: this.state.battery < 0 ? 0 : this.state.battery, total: 100, type: ProgressType.Ring })
-            .width(184).height(184).color($r('app.color.accent'))
+            .width(184).height(184).color(this.theme.palette.color)
             .backgroundColor($r('app.color.hero_halo')).style({ strokeWidth: 5 })
             .accessibilityText(this.state.battery < 0 ? '电量未读取' : '耳机电量 ' + this.state.battery + '%')
           Image($r('app.media.headphones_hero')).width(208).height(152).objectFit(ImageFit.Contain)
@@ -161,15 +168,15 @@ struct Index {
         }
         Button(this.state.busy ? $r('app.string.syncing') : $r('app.string.refresh_status'))
           .width('100%').height(46).fontSize(14).fontWeight(FontWeight.Medium)
-          .fontColor($r('app.color.accent')).backgroundColor($r('app.color.accent_soft'))
+          .fontColor(this.theme.palette.color).backgroundColor(this.theme.palette.soft)
           .enabled(!this.state.busy).onClick(() => { headphones.refreshStatus(); })
       } else if (this.state.connecting) {
         Row({ space: 8 }) {
-          LoadingProgress().width(18).height(18).color($r('app.color.accent'))
+          LoadingProgress().width(18).height(18).color(this.theme.palette.color)
           Text(this.state.message).fontSize(13).fontColor($r('app.color.text_secondary')).layoutWeight(1)
         }.width('100%')
         Button($r('app.string.cancel_connection')).width('100%').height(46)
-          .fontSize(15).fontColor($r('app.color.accent')).backgroundColor($r('app.color.accent_soft'))
+          .fontSize(15).fontColor(this.theme.palette.color).backgroundColor(this.theme.palette.soft)
           .onClick(() => { headphones.disconnect(); })
       } else {
         Button() {
@@ -178,7 +185,7 @@ struct Index {
             Text($r('app.string.connect_headphones')).fontSize(15).fontWeight(FontWeight.Medium)
               .fontColor($r('app.color.on_accent'))
           }
-        }.width('100%').height(48).backgroundColor($r('app.color.accent'))
+        }.width('100%').height(48).backgroundColor(this.theme.palette.color)
           .accessibilityText($r('app.string.connect_headphones')).onClick(() => { this.openDevices(); })
         Text($r('app.string.pair_first')).fontSize(11).fontColor($r('app.color.text_secondary'))
           .textAlign(TextAlign.Center).width('100%')
@@ -201,7 +208,7 @@ struct Index {
   @Builder
   FeatureRow(icon: Resource, title: Resource, subtitle: Resource) {
     Row({ space: 13 }) {
-      Image(icon).width(24).height(24).fillColor($r('app.color.accent'))
+      Image(icon).width(24).height(24).fillColor(this.theme.palette.color)
       Column({ space: 5 }) {
         Text(title).fontSize(15).fontWeight(FontWeight.Medium).fontColor($r('app.color.text_primary'))
         Text(subtitle).fontSize(11).fontColor($r('app.color.text_secondary'))
@@ -213,13 +220,13 @@ struct Index {
   @Builder
   NoticeBanner() {
     Row({ space: 10 }) {
-      Image($r('app.media.ic_info')).width(20).height(20).fillColor($r('app.color.accent'))
+      Image($r('app.media.ic_info')).width(20).height(20).fillColor(this.theme.palette.color)
       Text(this.state.notice).fontSize(13).lineHeight(20).fontColor($r('app.color.text_primary')).layoutWeight(1)
       Button({ type: ButtonType.Circle }) {
         Image($r('app.media.ic_close')).width(16).height(16).fillColor($r('app.color.text_secondary'))
       }.width(32).height(32).backgroundColor(Color.Transparent)
         .accessibilityText($r('app.string.dismiss_message')).onClick(() => { this.state.notice = ''; })
-    }.width('100%').padding(14).backgroundColor($r('app.color.accent_soft')).borderRadius(18)
+    }.width('100%').padding(14).backgroundColor(this.theme.palette.soft).borderRadius(18)
   }
 
   // This switch only reflects confirmed device state; tapping never flips it locally.
@@ -231,7 +238,7 @@ struct Index {
         Row().width(20).height(20).borderRadius(10).backgroundColor($r('app.color.on_accent'))
         if (!value) { Blank() }
       }.width(44).height(26).padding(3).borderRadius(13)
-        .backgroundColor(value ? $r('app.color.accent') : $r('app.color.text_tertiary'))
+        .backgroundColor(value ? this.theme.palette.color : $r('app.color.text_tertiary'))
     }.width(52).height(44).padding(0).borderRadius(22).backgroundColor(Color.Transparent)
       .enabled(available && !this.state.busy).accessibilityText(label)
       .accessibilityDescription(value ? $r('app.string.switch_on') : $r('app.string.switch_off'))
@@ -241,8 +248,8 @@ struct Index {
   @Builder
   SensitivityOption(label: Resource, value: number) {
     Button(label).layoutWeight(1).height(36).fontSize(12)
-      .fontColor(this.state.ambientSensitivity === value ? $r('app.color.accent') : $r('app.color.text_secondary'))
-      .backgroundColor(this.state.ambientSensitivity === value ? $r('app.color.accent_soft') : $r('app.color.surface_secondary'))
+      .fontColor(this.state.ambientSensitivity === value ? this.theme.palette.color : $r('app.color.text_secondary'))
+      .backgroundColor(this.state.ambientSensitivity === value ? this.theme.palette.soft : $r('app.color.surface_secondary'))
       .enabled(this.state.automaticAmbient && !this.state.busy)
       .accessibilitySelected(this.state.ambientSensitivity === value)
       .onClick(() => { headphones.setAutomaticAmbient(this.state.automaticAmbient, value); })
@@ -270,13 +277,13 @@ struct Index {
     Button({ type: ButtonType.Normal }) {
       Column({ space: 10 }) {
         Image(icon).width(25).height(25)
-          .fillColor(this.state.noiseMode === mode ? $r('app.color.accent') : $r('app.color.text_secondary'))
+          .fillColor(this.state.noiseMode === mode ? this.theme.palette.color : $r('app.color.text_secondary'))
         Text(label).fontSize(13).fontWeight(this.state.noiseMode === mode ? FontWeight.Medium : FontWeight.Regular)
-          .fontColor(this.state.noiseMode === mode ? $r('app.color.accent') : $r('app.color.text_primary'))
+          .fontColor(this.state.noiseMode === mode ? this.theme.palette.color : $r('app.color.text_primary'))
       }.width('100%').padding({ top: 17, bottom: 15 })
     }.layoutWeight(1).backgroundColor(this.state.noiseMode === mode ?
-      $r('app.color.accent_soft') : Color.Transparent).borderRadius(18)
-      .border({ width: 1, color: this.state.noiseMode === mode ? $r('app.color.accent_border') : Color.Transparent })
+      this.theme.palette.soft : Color.Transparent).borderRadius(18)
+      .border({ width: 1, color: this.state.noiseMode === mode ? this.theme.palette.border : Color.Transparent })
       .enabled(!this.state.busy && this.state.noiseAvailable)
       .accessibilityText(label).accessibilitySelected(this.state.noiseMode === mode)
       .onClick(() => { this.setMode(mode); })
@@ -289,7 +296,7 @@ struct Index {
         Text($r('app.string.listening_mode')).fontSize(18).fontWeight(FontWeight.Bold)
           .fontColor($r('app.color.text_primary'))
         Blank()
-        if (this.state.busy) { LoadingProgress().width(17).height(17).color($r('app.color.accent')) }
+        if (this.state.busy) { LoadingProgress().width(17).height(17).color(this.theme.palette.color) }
       }.width('100%')
       Row({ space: 4 }) {
         this.ModeTile($r('app.string.noise_cancel'), $r('app.media.ic_noise'), NoiseMode.Cancel)
@@ -303,10 +310,10 @@ struct Index {
         Row() {
           Text($r('app.string.ambient_level')).fontSize(14).fontColor($r('app.color.text_primary'))
           Blank()
-          Text(this.state.ambientLevel.toString() + ' / 20').fontSize(12).fontColor($r('app.color.accent'))
+          Text(this.state.ambientLevel.toString() + ' / 20').fontSize(12).fontColor(this.theme.palette.color)
         }.width('100%')
         Slider({ value: this.state.ambientLevel, min: 0, max: 20, step: 1 })
-          .selectedColor($r('app.color.accent')).trackColor($r('app.color.surface_secondary'))
+          .selectedColor(this.theme.palette.color).trackColor($r('app.color.surface_secondary'))
           .enabled(!this.state.busy).accessibilityText($r('app.string.ambient_level'))
           .onChange((value: number, mode: SliderChangeMode) => {
             if (mode === SliderChangeMode.End || mode === SliderChangeMode.Click) {
@@ -356,9 +363,9 @@ struct Index {
         }.alignItems(HorizontalAlign.Start).layoutWeight(1)
         Stack({ alignContent: Alignment.Center }) {
           Row().width(20).height(20).borderRadius(10).backgroundColor(Color.Transparent)
-            .border({ width: 1.5, color: this.state.priority === value ? $r('app.color.accent') : $r('app.color.text_tertiary') })
+            .border({ width: 1.5, color: this.state.priority === value ? this.theme.palette.color : $r('app.color.text_tertiary') })
           if (this.state.priority === value) {
-            Row().width(10).height(10).borderRadius(5).backgroundColor($r('app.color.accent'))
+            Row().width(10).height(10).borderRadius(5).backgroundColor(this.theme.palette.color)
           }
         }
       }.width('100%').padding({ top: 14, bottom: 14 })
@@ -375,9 +382,9 @@ struct Index {
         Text($r('app.string.connection_preference')).fontSize(18).fontWeight(FontWeight.Bold)
           .fontColor($r('app.color.text_primary'))
         Blank()
-        Text(this.state.codec).fontSize(11).fontColor($r('app.color.accent'))
+        Text(this.state.codec).fontSize(11).fontColor(this.theme.palette.color)
           .padding({ left: 9, right: 9, top: 5, bottom: 5 })
-          .backgroundColor($r('app.color.accent_soft')).borderRadius(8)
+          .backgroundColor(this.theme.palette.soft).borderRadius(8)
       }.width('100%').margin({ bottom: 4 })
       if (this.state.priorityAvailable) {
         this.QualityOption($r('app.string.quality_first'), $r('app.string.quality_first_hint'), 0)
@@ -429,7 +436,7 @@ struct Index {
       Row({ space: 10 }) {
         Text('均衡器 · 调整音色').fontSize(18).fontWeight(FontWeight.Bold)
           .fontColor($r('app.color.text_primary')).layoutWeight(1)
-        Text(eqPresetName(this.state.eqPreset)).fontSize(12).fontColor($r('app.color.accent'))
+        Text(eqPresetName(this.state.eqPreset)).fontSize(12).fontColor(this.theme.palette.color)
       }.width('100%')
       if (this.state.eqAvailable) {
         Text('耳机端 10 段 EQ · 从低频到高频').fontSize(12).fontColor($r('app.color.text_secondary')).width('100%')
@@ -437,15 +444,15 @@ struct Index {
           Flex({ wrap: FlexWrap.Wrap }) {
             ForEach(this.state.eqPresets, (preset: number) => {
               Button(eqPresetName(preset)).fontSize(12).height(36).margin({ right: 8, bottom: 8 })
-                .fontColor(this.state.eqPreset === preset ? $r('app.color.on_accent') : $r('app.color.accent'))
-                .backgroundColor(this.state.eqPreset === preset ? $r('app.color.accent') : $r('app.color.accent_soft'))
+                .fontColor(this.state.eqPreset === preset ? $r('app.color.on_accent') : this.theme.palette.color)
+                .backgroundColor(this.state.eqPreset === preset ? this.theme.palette.color : this.theme.palette.soft)
                 .enabled(!this.state.busy).accessibilitySelected(this.state.eqPreset === preset)
                 .onClick(() => { headphones.setEqualizer(preset); })
             }, (preset: number) => preset.toString())
           }.width('100%')
           if (this.state.eqBands.length === 10 && this.state.eqPresets.indexOf(0xa0) >= 0) {
             Button('调整 10 段均衡器').width('100%').height(42).fontSize(14)
-              .fontColor($r('app.color.accent')).backgroundColor($r('app.color.accent_soft'))
+              .fontColor(this.theme.palette.color).backgroundColor(this.theme.palette.soft)
               .enabled(!this.state.busy).onClick(() => { this.beginEqualizer(); })
           }
         } else {
@@ -453,24 +460,24 @@ struct Index {
             Row({ space: 8 }) {
               Text(label).width(58).fontSize(12).fontColor($r('app.color.text_secondary'))
               Slider({ value: this.eqDraft[index], min: 0, max: 12, step: 1 }).layoutWeight(1)
-                .selectedColor($r('app.color.accent')).enabled(!this.state.busy)
+                .selectedColor(this.theme.palette.color).enabled(!this.state.busy)
                 .accessibilityText(label + ' 均衡器档位')
                 .onChange((value: number) => {
                   const next = this.eqDraft.slice();
                   next[index] = Math.round(value);
                   this.eqDraft = next;
                 })
-              Text(this.eqDraft[index].toString()).width(22).fontSize(12).fontColor($r('app.color.accent'))
+              Text(this.eqDraft[index].toString()).width(22).fontSize(12).fontColor(this.theme.palette.color)
             }.width('100%')
           }, (label: string) => label)
           Text('档位 0–12；这里只显示调整档位，不作为实测频响曲线或 dB 标定。点击应用后由耳机确认。')
             .fontSize(11).lineHeight(18).fontColor($r('app.color.text_secondary')).width('100%')
           Row({ space: 10 }) {
-            Button('取消').layoutWeight(1).height(42).fontColor($r('app.color.accent'))
-              .backgroundColor($r('app.color.accent_soft')).enabled(!this.state.busy)
+            Button('取消').layoutWeight(1).height(42).fontColor(this.theme.palette.color)
+              .backgroundColor(this.theme.palette.soft).enabled(!this.state.busy)
               .onClick(() => { this.editingEq = false; })
             Button(this.state.busy ? '正在确认…' : '应用到耳机').layoutWeight(1).height(42)
-              .fontColor($r('app.color.on_accent')).backgroundColor($r('app.color.accent'))
+              .fontColor($r('app.color.on_accent')).backgroundColor(this.theme.palette.color)
               .enabled(!this.state.busy).onClick(() => { this.applyEqualizer(); })
           }.width('100%')
         }
@@ -517,8 +524,64 @@ struct Index {
   }
 
   @Builder
+  ColorModeOption(label: Resource, mode: ColorMode) {
+    Button(label)
+      .type(ButtonType.Normal).layoutWeight(1).constraintSize({ minHeight: 44 }).padding(6)
+      .borderRadius(14).fontSize(13).fontWeight(FontWeight.Medium)
+      .fontColor(this.theme.mode === mode ? this.theme.palette.color : $r('app.color.text_primary'))
+      .backgroundColor(this.theme.mode === mode ? this.theme.palette.soft : $r('app.color.surface_secondary'))
+      .border({ width: 1, color: this.theme.mode === mode ? this.theme.palette.border : Color.Transparent })
+      .accessibilitySelected(this.theme.mode === mode)
+      .enabled(!this.theme.saving)
+      .onClick(() => { this.changeAppearance(mode, this.theme.palette); })
+  }
+
+  @Builder
+  AccentOption(palette: AccentPalette) {
+    Button({ type: ButtonType.Normal }) {
+      Column({ space: 6 }) {
+        Stack({ alignContent: Alignment.Center }) {
+          Row().width(24).height(24).borderRadius(12).backgroundColor(palette.color)
+        }.width(34).height(34).borderRadius(17)
+          .border({ width: 2, color: this.theme.palette.id === palette.id ? palette.color : Color.Transparent })
+        Text(palette.label).fontSize(12)
+          .fontWeight(this.theme.palette.id === palette.id ? FontWeight.Medium : FontWeight.Regular)
+          .fontColor($r('app.color.text_primary')).textAlign(TextAlign.Center)
+      }.width('100%')
+    }.layoutWeight(1).constraintSize({ minHeight: 64 }).padding({ top: 7, bottom: 7, left: 2, right: 2 })
+      .borderRadius(14)
+      .backgroundColor(this.theme.palette.id === palette.id ? palette.soft : Color.Transparent)
+      .accessibilityText(palette.label).accessibilitySelected(this.theme.palette.id === palette.id)
+      .enabled(!this.theme.saving)
+      .onClick(() => { this.changeAppearance(this.theme.mode, palette); })
+  }
+
+  @Builder
+  AppearanceCard() {
+    Column({ space: 12 }) {
+      Text($r('app.string.theme_title')).fontSize(18).fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.text_primary'))
+      Row({ space: 6 }) {
+        this.ColorModeOption($r('app.string.theme_system'), ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET)
+        this.ColorModeOption($r('app.string.theme_light'), ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT)
+        this.ColorModeOption($r('app.string.theme_dark'), ConfigurationConstant.ColorMode.COLOR_MODE_DARK)
+      }.width('100%')
+      Text($r('app.string.theme_accent')).fontSize(13).fontColor($r('app.color.text_secondary'))
+      Row({ space: 4 }) {
+        ForEach(accentPalettes, (palette: AccentPalette) => { this.AccentOption(palette) },
+          (palette: AccentPalette) => palette.id)
+      }.width('100%')
+      if (this.theme.error !== undefined) {
+        Text(this.theme.error).fontSize(12).lineHeight(19).fontColor($r('app.color.error'))
+      }
+    }.alignItems(HorizontalAlign.Start).width('100%').padding(20)
+      .backgroundColor($r('app.color.surface')).borderRadius(24)
+  }
+
+  @Builder
   MorePage() {
     Column({ space: 16 }) {
+      this.AppearanceCard()
       Row({ space: 12 }) {
         Column({ space: 6 }) {
           Text('智能重连').fontSize(18).fontWeight(FontWeight.Bold).fontColor($r('app.color.text_primary'))
@@ -536,8 +599,8 @@ struct Index {
         Text($r('app.string.widget_guide_body')).fontSize(13).lineHeight(21)
           .fontColor($r('app.color.text_secondary')).width('100%')
         Text(this.state.backgroundActive ? $r('app.string.background_on') : $r('app.string.background_off'))
-          .fontSize(12).fontColor($r('app.color.accent')).width('100%')
-      }.padding(20).width('100%').backgroundColor($r('app.color.accent_soft')).borderRadius(24)
+          .fontSize(12).fontColor(this.theme.palette.color).width('100%')
+      }.padding(20).width('100%').backgroundColor(this.theme.palette.soft).borderRadius(24)
       Column({ space: 5 }) {
         Text($r('app.string.device_information')).fontSize(18).fontWeight(FontWeight.Bold)
           .fontColor($r('app.color.text_primary')).width('100%').margin({ bottom: 6 })
@@ -552,7 +615,7 @@ struct Index {
             .margin({ top: 12 }).onClick(() => { headphones.disconnect(); })
         } else {
           Button($r('app.string.connect_headphones')).width('100%').height(44)
-            .fontSize(14).fontColor($r('app.color.accent')).backgroundColor($r('app.color.accent_soft'))
+            .fontSize(14).fontColor(this.theme.palette.color).backgroundColor(this.theme.palette.soft)
             .margin({ top: 12 }).onClick(() => { this.openDevices(); })
         }
       }.padding(20).width('100%').backgroundColor($r('app.color.surface')).borderRadius(24)
@@ -563,7 +626,7 @@ struct Index {
           .fontColor($r('app.color.text_secondary')).width('100%')
         Divider().color($r('app.color.separator'))
         Row({ space: 10 }) {
-          Image($r('app.media.ic_lock')).width(18).height(18).fillColor($r('app.color.accent'))
+          Image($r('app.media.ic_lock')).width(18).height(18).fillColor(this.theme.palette.color)
           Text($r('app.string.privacy_title')).fontSize(15).fontWeight(FontWeight.Medium)
             .fontColor($r('app.color.text_primary'))
         }.width('100%')
@@ -609,14 +672,14 @@ struct Index {
         .fontColor($r('app.color.text_secondary')).width('100%')
       Row() {
         Button($r('app.string.refresh_devices')).fontSize(13).height(44)
-          .fontColor($r('app.color.accent')).backgroundColor($r('app.color.accent_soft'))
+          .fontColor(this.theme.palette.color).backgroundColor(this.theme.palette.soft)
           .enabled(!this.state.discovering).onClick(() => { this.refreshDevices(); })
       }.width('100%')
       if (this.state.error.length > 0) { this.ErrorBanner() }
       Scroll() {
         Column({ space: 10 }) {
           if (this.state.discovering) {
-            LoadingProgress().width(30).height(30).color($r('app.color.accent')).margin({ top: 30 })
+            LoadingProgress().width(30).height(30).color(this.theme.palette.color).margin({ top: 30 })
             Text($r('app.string.reading_devices')).fontSize(13).fontColor($r('app.color.text_secondary'))
           } else if (this.state.devices.length === 0) {
             Image($r('app.media.ic_bluetooth')).width(36).height(36)
@@ -629,7 +692,7 @@ struct Index {
             ForEach(this.state.devices, (device: PairedHeadphone) => {
               Button({ type: ButtonType.Normal }) {
                 Row({ space: 12 }) {
-                  Image($r('app.media.ic_headphones')).width(26).height(26).fillColor($r('app.color.accent'))
+                  Image($r('app.media.ic_headphones')).width(26).height(26).fillColor(this.theme.palette.color)
                   Column({ space: 5 }) {
                     Text(device.name).fontSize(15).fontWeight(FontWeight.Medium).fontColor($r('app.color.text_primary'))
                     Text($r('app.string.paired_device')).fontSize(11).fontColor($r('app.color.text_secondary'))
@@ -650,9 +713,9 @@ struct Index {
     Button({ type: ButtonType.Normal }) {
       Column({ space: 4 }) {
         Image(icon).width(23).height(23)
-          .fillColor(this.currentTab === tab ? $r('app.color.accent') : $r('app.color.text_tertiary'))
+          .fillColor(this.currentTab === tab ? this.theme.palette.color : $r('app.color.text_tertiary'))
         Text(label).fontSize(11).fontWeight(this.currentTab === tab ? FontWeight.Medium : FontWeight.Regular)
-          .fontColor(this.currentTab === tab ? $r('app.color.accent') : $r('app.color.text_secondary'))
+          .fontColor(this.currentTab === tab ? this.theme.palette.color : $r('app.color.text_secondary'))
       }.width('100%')
     }.height(52).layoutWeight(1).backgroundColor(Color.Transparent).borderRadius(16)
       .accessibilityText(label).accessibilitySelected(this.currentTab === tab)
@@ -711,9 +774,13 @@ struct Index {
   NativeLayout() {
     HdsTabs({ barPosition: BarPosition.End, index: this.currentTab }) {
       TabContent() { this.NativePage(0) }
-        .tabBar(BottomTabBarStyle.of($r('app.media.ic_headphones'), $r('app.string.tab_headphones')))
+        .tabBar(BottomTabBarStyle.of($r('app.media.ic_headphones'), $r('app.string.tab_headphones'))
+          .iconStyle({ selectedColor: this.theme.palette.color })
+          .labelStyle({ selectedColor: this.theme.palette.color }))
       TabContent() { this.NativePage(1) }
-        .tabBar(BottomTabBarStyle.of($r('app.media.ic_settings'), $r('app.string.more_title')))
+        .tabBar(BottomTabBarStyle.of($r('app.media.ic_settings'), $r('app.string.more_title'))
+          .iconStyle({ selectedColor: this.theme.palette.color })
+          .labelStyle({ selectedColor: this.theme.palette.color }))
     }.width('100%').height('100%').scrollable(false).animationDuration(250).barOverlap(true)
       .barFloatingStyle({ barSideMargin: 24, barBottomMargin: 12, adaptToHandedness: true,
         thermoCtrl: true, systemMaterialEffect: { materialType: hdsMaterial.MaterialType.IMMERSIVE,

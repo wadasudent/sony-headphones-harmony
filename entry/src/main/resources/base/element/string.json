@@ -1,5 +1,17 @@
 {
   "string": [
+    { "name": "theme_title", "value": "外观" },
+    { "name": "theme_system", "value": "跟随系统" },
+    { "name": "theme_light", "value": "浅色" },
+    { "name": "theme_dark", "value": "深色" },
+    { "name": "theme_accent", "value": "强调色" },
+    { "name": "accent_blue", "value": "蓝色" },
+    { "name": "accent_teal", "value": "青绿" },
+    { "name": "accent_purple", "value": "紫色" },
+    { "name": "accent_amber", "value": "琥珀" },
+    { "name": "theme_load_failed", "value": "未能读取已保存的主题，请重新选择。" },
+    { "name": "theme_apply_failed", "value": "未能切换颜色模式，请重试。" },
+    { "name": "theme_save_failed", "value": "主题已切换，保存失败。点按当前选项重试。" },
     {
       "name": "auto_reconnect",
       "value": "智能重连"

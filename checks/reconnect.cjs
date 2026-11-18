@@ -39,7 +39,8 @@ vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(__dirname,
 const entryExports = {};
 const entryKits = {
   '@kit.AbilityKit': { UIAbility: class {} }, '@kit.ArkUI': {}, '@kit.BasicServicesKit': {},
-  '@kit.PerformanceAnalysisKit': {}, '../services/Headphones': { get headphones() { return activeController; } }
+  '@kit.PerformanceAnalysisKit': {}, '../services/Appearance': { appearance: { load() {} } },
+  '../services/Headphones': { get headphones() { return activeController; } }
 };
 vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(__dirname,
   '../entry/src/main/ets/entryability/EntryAbility.ets'), 'utf8'), { compilerOptions: {
