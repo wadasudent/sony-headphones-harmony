@@ -1,4 +1,4 @@
-# Headphone Assistant for HarmonyOS
+# Sony Headphones Assistant for HarmonyOS
 
 English · [简体中文](README.zh-CN.md)
 

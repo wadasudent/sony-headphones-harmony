@@ -1,4 +1,4 @@
-# 鸿蒙耳机助手
+# 索尼耳机助手 · HarmonyOS
 
 [English](README.md) · 简体中文
 
