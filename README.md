@@ -12,7 +12,9 @@ Tablet view. The app interface is currently in Simplified Chinese.
 
 ## Install
 
-Installation currently requires a Windows PC and DevEco Studio. There is no AppGallery release or public installer.
+Download the [unsigned v0.5.0 HAP](https://github.com/wadasudent/sony-headphones-harmony/releases/download/v0.5.0/XM6Harmony-0.5.0-unsigned.hap) and apply a debug signature for your device before installing it.
+
+To build and sign from source, use DevEco Studio on Windows.
 
 1. On GitHub, open **Code** to clone the repository or choose **Download ZIP**. Follow [Building locally](#building-locally) to set up the SDK and initialize the project.
 2. Open the project in DevEco Studio, connect your device over USB, and enable USB debugging. Set up debug signing for that device under **Project Structure → Signing Configs**, then click **Run**. [Huawei device debugging guide](https://developer.huawei.com/consumer/cn/doc/harmonyos-faqs/app-debugging-faq-0005/)

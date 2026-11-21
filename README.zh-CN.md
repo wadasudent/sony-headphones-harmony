@@ -10,7 +10,9 @@
 
 ## 安装
 
-目前需要 Windows 电脑和 DevEco Studio 安装，暂无应用市场版本或公开安装包。
+下载 [0.5.0 未签名 HAP](https://github.com/wadasudent/sony-headphones-harmony/releases/download/v0.5.0/XM6Harmony-0.5.0-unsigned.hap)，为自己的设备配置调试签名后即可安装。
+
+如需从源码构建并签名，请在 Windows 上使用 DevEco Studio。
 
 1. 在 GitHub 的 **Code** 菜单克隆仓库或选择 **Download ZIP**。按[本地构建](#本地构建)一节配置 SDK、初始化项目。
 2. 用 DevEco Studio 打开项目，将开启 USB 调试的设备连接到电脑。在 **Project Structure → Signing Configs** 为该设备配置调试签名，点击 **Run** 安装。[华为真机调试指南](https://developer.huawei.com/consumer/cn/doc/harmonyos-faqs/app-debugging-faq-0005/)
