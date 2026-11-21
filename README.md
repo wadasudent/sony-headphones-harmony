@@ -2,7 +2,7 @@
 
 English · [简体中文](README.zh-CN.md)
 
-Switch listening modes, adjust the equalizer, and check your Sony headphones' battery from a HarmonyOS phone or tablet. Sony lists its Sound Connect app for Android and iOS. This community app brings those everyday controls to HarmonyOS over the headphones' Bluetooth MDR V2 protocol. [Sony Sound Connect downloads](https://www.sony.com/electronics/support/wireless-headphones-bluetooth-headphones/wh-1000xm6/software/00269130)
+Switch listening modes, adjust the equalizer, and check your Sony headphones' battery from a HarmonyOS phone or tablet. Sony lists its Sound Connect app for Android and iOS. This community app brings those everyday controls to HarmonyOS over the headphones' Bluetooth MDR V2 protocol. [Sony Sound Connect installation guide](https://helpguide.sony.net/mdr/2984/v1/en/contents/TP1001856853.html)
 
 **Version 0.5.0** · **No Internet permission** · [Install](#install) · [What's new](CHANGELOG.md)
 

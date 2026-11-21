@@ -2,7 +2,7 @@
 
 [English](README.md) · 简体中文
 
-在鸿蒙手机和平板上切换聆听模式、调均衡器、看索尼耳机电量。索尼官方 Sound Connect 提供 Android 和 iOS 版本。这个社区应用通过耳机的蓝牙 MDR V2 协议，把这些日常控制带到鸿蒙上。[索尼 Sound Connect 下载说明](https://service.sony.com.cn/content/casch/eclassroom/00000278.html)
+在鸿蒙手机和平板上切换聆听模式、调均衡器、看索尼耳机电量。索尼官方 Sound Connect 提供 Android 和 iOS 版本。这个社区应用通过耳机的蓝牙 MDR V2 协议，把这些日常控制带到鸿蒙上。[索尼 Sound Connect 安装说明](https://helpguide.sony.net/mdr/2984/v1/zh-cn/contents/TP1001856687.html)
 
 **当前版本 0.5.0** · **无网络权限** · [安装](#安装) · [更新记录](CHANGELOG.md)
 
@@ -15,7 +15,7 @@
 1. 在 GitHub 的 **Code** 菜单克隆仓库或选择 **Download ZIP**。按[本地构建](#本地构建)一节配置 SDK、初始化项目。
 2. 用 DevEco Studio 打开项目，将开启 USB 调试的设备连接到电脑。在 **Project Structure → Signing Configs** 为该设备配置调试签名，点击 **Run** 安装。[华为真机调试指南](https://developer.huawei.com/consumer/cn/doc/harmonyos-faqs/app-debugging-faq-0005/)
 
-已有适用于该设备的签名 HAP 时，也可以执行 `hdc install -r <签名包路径>` 覆盖安装。[HDC 安装文档](https://developer.huawei.com/consumer/cn/doc/harmonyOS-guides/hdc/)
+已有适用于该设备的签名 HAP 时，也可以执行 `hdc install -r <签名包路径>` 覆盖安装。[HDC 安装文档](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/hdc/)
 
 配置的最低系统版本为 **HarmonyOS 6.0（API 20）**。已在 HarmonyOS 7 上实测，6.0 待测。
 

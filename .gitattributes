@@ -1,2 +1,4 @@
 * text=auto eol=lf
 *.ps1 text eol=crlf
+*.ets linguist-language=ArkTS
+/checks/*.cjs linguist-detectable=false
