@@ -12,6 +12,8 @@
 
 下载 [0.5.0 未签名 HAP](https://github.com/wadasudent/sony-headphones-harmony/releases/download/v0.5.0/XM6Harmony-0.5.0-unsigned.hap)，为自己的设备配置调试签名后即可安装。
 
+[v0.5.0 发布说明](https://github.com/wadasudent/sony-headphones-harmony/releases/tag/v0.5.0) 提供第三方工具「小白调试助手」的签名步骤和 SHA-256 校验值。签名需要登录华为开发者账号。华为应用签名指南列出的调试证书有效期为未实名 14 天、已实名 1 年，具体以签发证书的到期日期为准。[华为调试证书说明](https://developer.huawei.com/consumer/cn/doc/app/agc-help-add-debugcert-0000001914263178/)
+
 如需从源码构建并签名，请在 Windows 上使用 DevEco Studio。
 
 1. 在 GitHub 的 **Code** 菜单克隆仓库或选择 **Download ZIP**。按[本地构建](#本地构建)一节配置 SDK、初始化项目。

@@ -14,6 +14,8 @@ Tablet view. The app interface is currently in Simplified Chinese.
 
 Download the [unsigned v0.5.0 HAP](https://github.com/wadasudent/sony-headphones-harmony/releases/download/v0.5.0/XM6Harmony-0.5.0-unsigned.hap) and apply a debug signature for your device before installing it.
 
+The [v0.5.0 release notes](https://github.com/wadasudent/sony-headphones-harmony/releases/tag/v0.5.0) cover signing with the third-party Xiaobai Debug Assistant and list the SHA-256 checksum. Sign in with a Huawei developer account. Huawei's app signing guide lists debug certificate validity as 14 days for unverified developers and one year for identity-verified developers. Check the expiration date on your issued certificate. [Huawei debug certificate guide](https://developer.huawei.com/consumer/cn/doc/app/agc-help-add-debugcert-0000001914263178/)
+
 To build and sign from source, use DevEco Studio on Windows.
 
 1. On GitHub, open **Code** to clone the repository or choose **Download ZIP**. Follow [Building locally](#building-locally) to set up the SDK and initialize the project.
