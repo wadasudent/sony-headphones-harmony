@@ -1,36 +1,38 @@
-# 索尼耳机助手 · HarmonyOS
+# Sony Headphones Assistant for HarmonyOS
 
-面向鸿蒙手机和平板的非官方索尼蓝牙耳机管理工具。查看电量、切换降噪与环境声、调整均衡器，还可以把耳机状态放到桌面服务卡片。当前以 HarmonyOS 7 为目标平台。
+English · [简体中文](README.zh-CN.md)
 
-## 使用
+An unofficial companion app for Sony Bluetooth headphones and earbuds on HarmonyOS 7 phones and tablets. Check battery levels, switch between noise canceling and ambient sound, adjust the equalizer, and see headphone status on a home screen widget.
 
-- 在系统蓝牙设置中配对并连接耳机，再打开助手。智能重连默认开启，优先接入上次使用的耳机。有多副可选设备且无优先设备时，请在应用内选择。
-- 长按应用图标添加服务卡片。卡片显示电量和聆听模式，断链时隐藏读数，点按可重连。
-- 在「更多 → 外观」选择深浅色模式和强调色。外观设置、卡片读数和重连标识保存在本机。
+## Using the app
 
-## 耳机兼容性
+- Pair and connect your headphones in system Bluetooth settings, then open the app. Auto-reconnect is enabled by default and gives priority to the last headset used. If several headsets are available and there is no preferred device, select one in the app.
+- Long-press the app icon to add a home screen widget. It shows the battery level and listening mode while connected. The readings are hidden when disconnected. Tap the widget to reconnect.
+- Choose a light or dark appearance, follow the system appearance, or change the accent color under **More → Appearance** (「更多 → 外观」). Appearance settings, widget readings, and the device identifier used for reconnection are stored locally.
 
-| 型号 | 当前验证情况 |
+## Headphone compatibility
+
+| Model | Verification |
 | --- | --- |
-| WH-1000XM6 | 已在鸿蒙手机和平板上实测连接与状态读取。支持降噪、环境声和十段均衡器。 |
-| WF-1000XM5 | 左耳、右耳和充电盒电量已通过报文回放验证，待鸿蒙真机测试。 |
-| 其他索尼耳机 | 按设备报告的 MDR V2 能力显示功能，待逐型号验证。 |
+| WH-1000XM6 | Connection and status reporting tested on HarmonyOS phones and tablets. Supports noise canceling, ambient sound, and a 10-band equalizer. |
+| WF-1000XM5 | Left earbud, right earbud, and charging case battery levels verified by replaying recorded Bluetooth packets. Testing on HarmonyOS hardware is pending. |
+| Other Sony models | Controls appear according to the MDR V2 capabilities reported by the device. Compatibility varies by model. |
 
-当前版本暂不支持旧款 MDR V1 协议和固件升级。详见[真机测试记录](docs/DEVICE_TEST_2026-11-07.md)、[固件升级调查](docs/FIRMWARE_UPDATE_FEASIBILITY.md)和[手动降噪档位调查](docs/XM6_MANUAL_ANC_RESEARCH.md)。
+Legacy MDR V1 devices and firmware updates are currently unsupported. See the [device test notes](docs/DEVICE_TEST_2026-11-07.md), [firmware update investigation](docs/FIRMWARE_UPDATE_FEASIBILITY.md), and [manual ANC level investigation](docs/XM6_MANUAL_ANC_RESEARCH.md) for details. These notes are in Chinese.
 
-## 本地构建
+## Building locally
 
-安装 DevEco Studio 和 HarmonyOS API 26 SDK。在 Windows PowerShell 的项目根目录运行以下命令。
+Install DevEco Studio and the HarmonyOS API 26 SDK. Run the following commands from the repository root in Windows PowerShell.
 
 ```powershell
 .\build.ps1 -CheckOnly
 .\build.ps1
 ```
 
-第一条运行协议、卡片和重连检查，无需设备或签名。第二条从 `build-profile.example.json5` 初始化本地配置，构建调试 HAP。自定义安装位置可通过 `-ToolHome '你的 DevEco Studio 安装目录'` 指定，或设置 `DEVECO_STUDIO_HOME`。
+The first command runs the protocol, widget, and reconnection checks without a device or signing credentials. The second initializes the local configuration from `build-profile.example.json5` and builds a debug HAP. For a custom DevEco Studio installation, pass `-ToolHome 'path to DevEco Studio'` or set `DEVECO_STUDIO_HOME`.
 
-真机安装需在 DevEco Studio 的 **Project Structure → Signing Configs** 配置自己的设备调试签名，再次构建。安装包为 `entry/build/default/outputs/default/entry-default-signed.hap`。本地签名配置、密钥和安装包均由 Git 忽略。
+To install on a device, configure your own debug signing in DevEco Studio under **Project Structure → Signing Configs**, then build again. The signed package is written to `entry/build/default/outputs/default/entry-default-signed.hap`. Git ignores local signing configuration, keys, and build packages.
 
-## 作者与许可
+## Credits and licensing
 
-主要代码、界面和文档由 OpenAI Codex 辅助完成，维护者提供需求、设备和使用反馈。MDR 协议实现参考并移植自 **SonyHeadphonesClient**（MIT）。本项目新增部分的许可证尚待确定。上游署名、许可原文和测试报文来源见[第三方声明](THIRD_PARTY_NOTICES.md)。
+OpenAI Codex assisted with the code, interface, and documentation. The maintainer provided requirements, test devices, and feedback. The MDR protocol implementation draws on and adapts parts of **SonyHeadphonesClient** (MIT). A license for this project's original work is pending. See the [third-party notices](THIRD_PARTY_NOTICES.md) for attribution, license text, and packet capture sources.
