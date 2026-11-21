@@ -35,4 +35,7 @@
 
 ## 作者与许可
 
-主要代码、界面和文档由 OpenAI Codex 辅助完成，维护者提供需求、设备和使用反馈。MDR 协议实现参考并移植自 **SonyHeadphonesClient**（MIT）。本项目新增部分的许可证尚待确定。上游署名、许可原文和测试报文来源见[第三方声明](THIRD_PARTY_NOTICES.md)。
+- **移植代码。** MDR 协议和蓝牙 RFCOMM 连接处理的部分代码移植或改编自 **SonyHeadphonesClient**，作者为 mos9527、Amr Satrio 及贡献者。这些代码保留上游 MIT 许可。[上游仓库](https://github.com/mos9527/SonyHeadphonesClient)
+- **协议参考和测试数据。** WF-1000XM5 电量测试使用 SonyHeadphonesClient 的上游抓包。WH-1000XM6 十段均衡器实现对照了 sony-device-center 公布的报文。[sony-device-center PR #44](https://github.com/marconvcm/sony-device-center/pull/44)
+
+本项目的代码、界面和文档由 OpenAI Codex 辅助开发，维护者提供需求、测试设备和使用反馈。项目原创部分的许可证尚待确定。[引用文件、上游提交和完整许可声明](THIRD_PARTY_NOTICES.md)

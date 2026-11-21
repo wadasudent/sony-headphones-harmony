@@ -35,4 +35,7 @@ To install on a device, configure your own debug signing in DevEco Studio under 
 
 ## Credits and licensing
 
-OpenAI Codex assisted with the code, interface, and documentation. The maintainer provided requirements, test devices, and feedback. The MDR protocol implementation draws on and adapts parts of **SonyHeadphonesClient** (MIT). A license for this project's original work is pending. See the [third-party notices](THIRD_PARTY_NOTICES.md) for attribution, license text, and packet capture sources.
+- **Adapted code.** Parts of the MDR protocol implementation and Bluetooth RFCOMM connection handling were ported or adapted from **SonyHeadphonesClient** by mos9527, Amr Satrio, and contributors. Those portions retain their upstream MIT license. [Upstream repository](https://github.com/mos9527/SonyHeadphonesClient)
+- **Protocol and test data.** The WF-1000XM5 battery tests replay upstream captures from SonyHeadphonesClient. The WH-1000XM6 10-band equalizer implementation was checked against the packet data documented by sony-device-center. [sony-device-center PR #44](https://github.com/marconvcm/sony-device-center/pull/44)
+
+OpenAI Codex assisted with this project's code, interface, and documentation. The maintainer provided requirements, test devices, and feedback. The license for this project's original work is pending. [Source files, upstream revisions, and full license notice](THIRD_PARTY_NOTICES.md)
