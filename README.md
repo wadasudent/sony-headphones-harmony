@@ -1,33 +1,35 @@
-# Sony Headphones Assistant for HarmonyOS
+# Headphone Assistant for HarmonyOS
 
 English · [简体中文](README.zh-CN.md)
 
 Switch listening modes, adjust the equalizer, and check your Sony headphones' battery from a HarmonyOS phone or tablet. Sony lists its Sound Connect app for Android and iOS. This community app brings those everyday controls to HarmonyOS over the headphones' Bluetooth MDR V2 protocol. [Sony Sound Connect downloads](https://www.sony.com/electronics/support/wireless-headphones-bluetooth-headphones/wh-1000xm6/software/00269130)
 
-**Version 0.5.0** · [Install](#install) · [Change history](https://github.com/wadasudent/sony-headphones-harmony/commits/main/)
+**Version 0.5.0** · **No Internet permission** · [Install](#install) · [What's new](CHANGELOG.md)
 
-<p>
-  <a href="docs/screenshots/phone.png"><img src="docs/screenshots/phone.png" width="21%" alt="Phone app showing the connected WH-1000XM6, battery level, and listening modes"></a>
-  <a href="docs/screenshots/tablet.png"><img src="docs/screenshots/tablet.png" width="72%" alt="Tablet app showing WH-1000XM6 status and equalizer in a two-column layout"></a>
-</p>
+[![Tablet app showing WH-1000XM6 status, listening modes, and equalizer presets](docs/screenshots/tablet.png)](docs/screenshots/tablet.png)
+
+Tablet view. The app interface is currently in Simplified Chinese.
 
 ## Install
 
-The repository provides source code. A public installer is currently unavailable.
+Installation currently requires a Windows PC and DevEco Studio. There is no AppGallery release or public installer.
 
-1. [Download the source ZIP](https://github.com/wadasudent/sony-headphones-harmony/archive/refs/heads/main.zip) or clone the repository. Install DevEco Studio with the HarmonyOS API 26 SDK.
-2. Copy `build-profile.example.json5` to `build-profile.json5` if the latter is missing. Open the project in DevEco Studio.
-3. Enable USB debugging on your device and connect it to your computer. Set up debug signing for that device in **Project Structure → Signing Configs**, then click **Run**. [Huawei device debugging guide](https://developer.huawei.com/consumer/cn/doc/harmonyos-faqs/app-debugging-faq-0005/)
+1. On GitHub, open **Code** to clone the repository or choose **Download ZIP**. Follow [Building locally](#building-locally) to set up the SDK and initialize the project.
+2. Open the project in DevEco Studio, connect your device over USB, and enable USB debugging. Set up debug signing for that device under **Project Structure → Signing Configs**, then click **Run**. [Huawei device debugging guide](https://developer.huawei.com/consumer/cn/doc/harmonyos-faqs/app-debugging-faq-0005/)
 
 If you already have a HAP signed for your device, run `hdc install -r <path-to-signed.hap>` with Huawei Device Connector. [HDC installation reference](https://developer.huawei.com/consumer/en/doc/harmonyos-guides/hdc/)
 
-The build targets API 26. Its configured minimum is **HarmonyOS 6.0 (API 20)**. Physical-device testing has covered HarmonyOS 7. Testing on 6.0 is pending.
+The configured minimum is **HarmonyOS 6.0 (API 20)**. Physical-device testing has covered HarmonyOS 7. Testing on 6.0 is pending.
 
 ## Using the app
 
 - Pair and connect your headphones in system Bluetooth settings, then open the app. Auto-reconnect is enabled by default and gives priority to the last headset used. If several headsets are available and there is no preferred device, select one in the app.
 - Long-press the app icon to add a home screen widget. It shows the battery level and listening mode while connected. The readings are hidden when disconnected. Tap the widget to reconnect.
 - Choose a light or dark appearance, follow the system appearance, or change the accent color under **More → Appearance** (「更多 → 外观」).
+
+<p align="center">
+  <a href="docs/screenshots/phone.png"><img src="docs/screenshots/phone.png" width="360" alt="Phone app showing WH-1000XM6 battery level and all three listening modes"></a>
+</p>
 
 ## Headphone compatibility
 
@@ -49,11 +51,11 @@ See the [device test notes](docs/DEVICE_TEST_2026-11-07.md) in Chinese for the t
 
 Bluetooth access (`ACCESS_BLUETOOTH`) lets the app find and control paired headphones. Background running (`KEEP_BACKGROUND_RUNNING`, `bluetoothInteraction`) lets an active control connection keep syncing the widget while the app is in the background, subject to system limits. Disconnecting in the app stops that session.
 
-The app has no Internet permission. Appearance preferences, the last headset identifier, and widget readings stay on the device. Connection logs are kept in memory.
+Appearance preferences, the last headset identifier, and widget readings stay on the device. Connection logs are kept in memory.
 
 ## Building locally
 
-Install DevEco Studio and the HarmonyOS API 26 SDK. Run the following commands from the repository root in Windows PowerShell.
+Install DevEco Studio with the HarmonyOS API 26 SDK, which the build targets. Run the following commands from the repository root in Windows PowerShell.
 
 ```powershell
 .\build.ps1 -CheckOnly
@@ -64,11 +66,15 @@ The first command runs the protocol, widget, and reconnection checks without a d
 
 With debug signing configured, the build writes `entry/build/default/outputs/default/entry-default-signed.hap`. Git ignores local signing configuration, keys, and build packages.
 
-## Credits and licensing
+## Credits
 
 - **Adapted code.** Parts of the MDR protocol implementation and Bluetooth RFCOMM connection handling were ported or adapted from **SonyHeadphonesClient** by mos9527, Amr Satrio, and contributors. Those portions retain their upstream MIT license. [Upstream repository](https://github.com/mos9527/SonyHeadphonesClient)
 - **Protocol and test data.** The WF-1000XM5 battery tests replay upstream captures from SonyHeadphonesClient. The WH-1000XM6 10-band equalizer implementation was checked against the packet data documented by sony-device-center. [sony-device-center PR #44](https://github.com/marconvcm/sony-device-center/pull/44)
 
-OpenAI Codex assisted with this project's code, interface, and documentation. The maintainer provided requirements, test devices, and feedback. The license for this project's original work is pending. [Source files, upstream revisions, and full license notice](THIRD_PARTY_NOTICES.md)
+OpenAI Codex assisted with this project's code, interface, and documentation. The maintainer provided requirements, test devices, and feedback.
 
 Sony and model names identify compatible hardware. This independent project has no affiliation with Sony or Huawei.
+
+## License
+
+The portions adapted from SonyHeadphonesClient retain their MIT license and copyright notices. The maintainer has not yet selected a license for this project's original work. [Source files, upstream revisions, and full license notice](THIRD_PARTY_NOTICES.md)

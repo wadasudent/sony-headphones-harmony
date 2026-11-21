@@ -1,33 +1,33 @@
-# 索尼耳机助手 · HarmonyOS
+# 鸿蒙耳机助手
 
 [English](README.md) · 简体中文
 
 在鸿蒙手机和平板上切换聆听模式、调均衡器、看索尼耳机电量。索尼官方 Sound Connect 提供 Android 和 iOS 版本。这个社区应用通过耳机的蓝牙 MDR V2 协议，把这些日常控制带到鸿蒙上。[索尼 Sound Connect 下载说明](https://service.sony.com.cn/content/casch/eclassroom/00000278.html)
 
-**当前版本 0.5.0** · [安装](#安装) · [更新记录](https://github.com/wadasudent/sony-headphones-harmony/commits/main/)
+**当前版本 0.5.0** · **无网络权限** · [安装](#安装) · [更新记录](CHANGELOG.md)
 
-<p>
-  <a href="docs/screenshots/phone.png"><img src="docs/screenshots/phone.png" width="21%" alt="手机界面显示已连接的 WH-1000XM6、电量和聆听模式"></a>
-  <a href="docs/screenshots/tablet.png"><img src="docs/screenshots/tablet.png" width="72%" alt="平板双栏界面显示 WH-1000XM6 状态和均衡器"></a>
-</p>
+[![平板双栏界面显示 WH-1000XM6 状态、聆听模式和均衡器预设](docs/screenshots/tablet.png)](docs/screenshots/tablet.png)
 
 ## 安装
 
-仓库提供源码，目前没有公开安装包。
+目前需要 Windows 电脑和 DevEco Studio 安装，暂无应用市场版本或公开安装包。
 
-1. [下载源码 ZIP](https://github.com/wadasudent/sony-headphones-harmony/archive/refs/heads/main.zip) 或克隆仓库。安装 DevEco Studio 和 HarmonyOS API 26 SDK。
-2. 如果没有 `build-profile.json5`，将 `build-profile.example.json5` 复制为该文件，再用 DevEco Studio 打开项目。
-3. 开启设备的 USB 调试并连接电脑。在 **Project Structure → Signing Configs** 为该设备配置调试签名，点击 **Run** 安装。[华为真机调试指南](https://developer.huawei.com/consumer/cn/doc/harmonyos-faqs/app-debugging-faq-0005/)
+1. 在 GitHub 的 **Code** 菜单克隆仓库或选择 **Download ZIP**。按[本地构建](#本地构建)一节配置 SDK、初始化项目。
+2. 用 DevEco Studio 打开项目，将开启 USB 调试的设备连接到电脑。在 **Project Structure → Signing Configs** 为该设备配置调试签名，点击 **Run** 安装。[华为真机调试指南](https://developer.huawei.com/consumer/cn/doc/harmonyos-faqs/app-debugging-faq-0005/)
 
 已有适用于该设备的签名 HAP 时，也可以执行 `hdc install -r <签名包路径>` 覆盖安装。[HDC 安装文档](https://developer.huawei.com/consumer/cn/doc/harmonyOS-guides/hdc/)
 
-编译目标为 API 26，配置的最低系统版本为 **HarmonyOS 6.0（API 20）**。已在 HarmonyOS 7 上实测，6.0 待测。
+配置的最低系统版本为 **HarmonyOS 6.0（API 20）**。已在 HarmonyOS 7 上实测，6.0 待测。
 
 ## 使用
 
 - 在系统蓝牙设置中配对并连接耳机，再打开助手。智能重连默认开启，优先接入上次使用的耳机。有多副可选设备且无优先设备时，请在应用内选择。
 - 长按应用图标添加服务卡片。卡片显示电量和聆听模式，断链时隐藏读数，点按可重连。
 - 在「更多 → 外观」选择深浅色模式和强调色。
+
+<p align="center">
+  <a href="docs/screenshots/phone.png"><img src="docs/screenshots/phone.png" width="360" alt="手机界面显示 WH-1000XM6 电量及三种聆听模式"></a>
+</p>
 
 ## 耳机兼容性
 
@@ -49,11 +49,11 @@
 
 蓝牙权限（`ACCESS_BLUETOOTH`）用于查找和控制已配对耳机。后台运行权限（`KEEP_BACKGROUND_RUNNING`、`bluetoothInteraction`）用于在退到后台后维持当前的耳机控制连接，继续同步服务卡片，实际运行受系统限制。在应用内断开连接会结束这项后台任务。
 
-应用不申请网络权限。外观偏好、上次耳机标识和卡片读数保存在本机，连接日志仅存于内存。
+外观偏好、上次耳机标识和卡片读数保存在本机，连接日志仅存于内存。
 
 ## 本地构建
 
-安装 DevEco Studio 和 HarmonyOS API 26 SDK。在 Windows PowerShell 的项目根目录运行以下命令。
+安装 DevEco Studio 和项目编译使用的 HarmonyOS API 26 SDK。在 Windows PowerShell 的项目根目录运行以下命令。
 
 ```powershell
 .\build.ps1 -CheckOnly
@@ -64,11 +64,15 @@
 
 配置调试签名后，构建输出为 `entry/build/default/outputs/default/entry-default-signed.hap`。本地签名配置、密钥和安装包均由 Git 忽略。
 
-## 作者与许可
+## 作者与致谢
 
 - **移植代码。** MDR 协议和蓝牙 RFCOMM 连接处理的部分代码移植或改编自 **SonyHeadphonesClient**，作者为 mos9527、Amr Satrio 及贡献者。这些代码保留上游 MIT 许可。[上游仓库](https://github.com/mos9527/SonyHeadphonesClient)
 - **协议参考和测试数据。** WF-1000XM5 电量测试使用 SonyHeadphonesClient 的上游抓包。WH-1000XM6 十段均衡器实现对照了 sony-device-center 公布的报文。[sony-device-center PR #44](https://github.com/marconvcm/sony-device-center/pull/44)
 
-本项目的代码、界面和文档由 OpenAI Codex 辅助开发，维护者提供需求、测试设备和使用反馈。项目原创部分的许可证尚待确定。[引用文件、上游提交和完整许可声明](THIRD_PARTY_NOTICES.md)
+本项目的代码、界面和文档由 OpenAI Codex 辅助开发，维护者提供需求、测试设备和使用反馈。
 
 文中的索尼品牌与型号名称用于说明适用设备。本项目独立开发，与索尼、华为无官方关联。
+
+## 许可
+
+来自 SonyHeadphonesClient 的改编部分保留 MIT 许可和原有版权声明。项目原创部分的许可证尚待确定。[引用文件、上游提交和完整许可声明](THIRD_PARTY_NOTICES.md)
